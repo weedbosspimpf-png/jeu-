@@ -35,7 +35,10 @@ export const politicsTrack: CareerTrack = {
       minTurnsInRank: 3,
       requirements: (state) =>
         state.character.stats.influence >= 70 && state.career.performance >= 65,
-      onPromote: [{ type: "stat", stat: "influence", delta: 15 }],
+      onPromote: [
+        { type: "stat", stat: "influence", delta: 15 },
+        { type: "relationshipSyncPresident" },
+      ],
     },
     {
       id: "president",

@@ -7,8 +7,14 @@ import { endgameEvents } from "./endgame";
 import { armyTrainingEvents } from "./armyTraining";
 import { armyCareerEvents } from "./armyCareer";
 import { policeMoralEvents } from "./policeMoral";
+import { policeCareerEvents } from "./policeCareer";
 import { gendarmerieTrainingEvents } from "./gendarmerieTraining";
+import { gendarmerieCareerEvents } from "./gendarmerieCareer";
 import { crimeMissionEvents } from "./crimeMissions";
+import { crimeCareerEvents } from "./crimeCareer";
+import { entrepreneurCareerEvents } from "./entrepreneurCareer";
+import { civilCareerEvents } from "./civilCareer";
+import { politicsCareerEvents } from "./politicsCareer";
 import { memoryEvents } from "./memory";
 
 export const ALL_EVENTS: GameEvent[] = [
@@ -20,7 +26,13 @@ export const ALL_EVENTS: GameEvent[] = [
   ...armyTrainingEvents,
   ...armyCareerEvents,
   ...policeMoralEvents,
+  ...policeCareerEvents,
   ...gendarmerieTrainingEvents,
+  ...gendarmerieCareerEvents,
   ...crimeMissionEvents,
+  ...crimeCareerEvents,
+  ...entrepreneurCareerEvents,
+  ...civilCareerEvents,
+  ...politicsCareerEvents,
   ...memoryEvents,
 ];

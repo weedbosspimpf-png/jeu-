@@ -143,6 +143,69 @@ export const memoryEvents: GameEvent[] = [
     ],
   },
   {
+    id: "corrupt-colleague-resurfaces",
+    title: "Fofana refait surface",
+    description:
+      "L'ancien collegue policier que tu avais denonce, ou avec qui tu avais partage des gains douteux, occupe aujourd'hui un poste inattendu.",
+    category: "memory",
+    once: true,
+    condition: (state) =>
+      state.character.age >= 34 && state.relationships["collegue-corrompu"] !== undefined,
+    choices: [
+      {
+        id: "settle-past",
+        label: "Regler les choses calmement avec le passe",
+        effects: [
+          { type: "relationship", npcId: "collegue-corrompu", trust: 10 },
+          { type: "stat", stat: "diplomacy", delta: 4 },
+        ],
+      },
+      {
+        id: "exploit-past-link",
+        label: "Te servir de ce lien ancien a ton avantage",
+        effects: [
+          { type: "stat", stat: "opportunism", delta: 6 },
+          { type: "stat", stat: "influence", delta: 4 },
+        ],
+      },
+      {
+        id: "cut-ties",
+        label: "Couper definitivement les liens",
+        effects: [{ type: "relationshipStatus", npcId: "collegue-corrompu", status: "ennemi" }],
+      },
+    ],
+  },
+  {
+    id: "opposition-past-echo",
+    title: "Le prix de l'opposition",
+    description:
+      "Des annees apres avoir rejoint l'opposition au president de l'epoque, ce choix ancien resurgit dans le climat politique actuel.",
+    category: "memory",
+    once: true,
+    condition: (state) =>
+      state.flags["minister-joined-opposition"] === true &&
+      state.character.age >= 45 &&
+      state.career.currentTrack === "politics",
+    choices: [
+      {
+        id: "claim-consistency",
+        label: "Revendiquer la coherence de ton parcours d'opposant",
+        effects: [
+          { type: "stat", stat: "integrity", delta: 6 },
+          { type: "stat", stat: "popularity", delta: 6 },
+        ],
+      },
+      {
+        id: "seek-reconciliation",
+        label: "Chercher une reconciliation avec le pouvoir en place",
+        effects: [
+          { type: "relationship", npcId: "president", trust: 15 },
+          { type: "stat", stat: "opportunism", delta: 5 },
+        ],
+      },
+    ],
+  },
+  {
     id: "mentor-crosses-path-again",
     title: "Ton mentor reapparait",
     description:

@@ -115,13 +115,13 @@ trajectoires totalement differentes selon les choix faits a chaque grade.
   `data/stats.ts`). Aucune combinaison n'est presentee comme "la bonne" :
   un personnage peut etre loyal ET corrompu, integre ET tres ambitieux.
 - **Choix contextuels par grade** : les evenements de carriere lisent
-  `state.career.currentRankId` pour proposer des dilemmes adaptes au
-  niveau de responsabilite (recrue = camaraderie/discipline, officier =
-  commandement/corruption ponctuelle, colonel/commandant = ressources et
-  reseaux d'influence, general = relations avec le president et crises
-  politiques majeures). Voir `data/events/armyCareer.ts` pour le modele
-  de reference (filiere armee), a repliquer pour police/gendarmerie/
-  crime/entrepreneuriat/politique/vie civile.
+  `state.career.currentRankId` (et souvent `state.world.regime` /
+  `state.world.president`) pour proposer des dilemmes adaptes au niveau
+  de responsabilite et au contexte du pays. Chaque filiere a son propre
+  gameplay, pas un clone du modele armee (voir plus bas) : `armyCareer.ts`
+  reste le gabarit *architectural* (rangs -> conditions -> effets
+  immediats/differes/caches -> memoire), mais chaque fichier invente ses
+  propres situations narratives.
 - **Gouvernement vivant** : `WorldState` porte desormais un `regime`
   (type institutionnel : democratie stable/fragile, autoritaire,
   repressif, transition, instable — jamais qualifie de bon/mauvais) et un
@@ -141,11 +141,11 @@ trajectoires totalement differentes selon les choix faits a chaque grade.
   representaient un vrai nouveau concept, pas juste du contenu) :
   `presidentTrait`, `regimeShift`, `relationshipSyncPresident`.
 
-Prochaine etape prevue (voir aussi limites connues) : repliquer la meme
-profondeur (choix contextuels par grade/reputation/corruption, boucle
-recrutement -> epreuves -> missions -> dilemmes -> promotions) pour
-police, gendarmerie, criminalite fictive, entrepreneuriat, politique et
-vie civile, en s'appuyant sur `armyCareer.ts` comme gabarit.
+Cette profondeur par grade/contexte est desormais implementee pour les
+7 filieres (armee, police, gendarmerie, criminalite fictive,
+entrepreneuriat, vie civile, politique) — voir le detail par fichier
+dans l'arborescence `data/events/` ci-dessous et la section
+"Etat d'avancement actuel".
 
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
@@ -184,13 +184,31 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
     relationships.ts         evenements de relation (mentor, rival)
     endgame.ts                declencheurs de fins (retraite, enquete policiere...)
     armyTraining.ts           les 7 epreuves militaires + affectation finale
-    armyCareer.ts              boucle de carriere par grade (corruption,
-                               opportunisme, empathie, lien avec le
-                               president, crise politique) - gabarit a
-                               repliquer pour les autres filieres
-    policeMoral.ts             dilemmes moraux police/gendarmerie
-    gendarmerieTraining.ts     evenements propres a la gendarmerie
-    crimeMissions.ts           chaine de missions criminelles fictives
+    armyCareer.ts              boucle de carriere par grade : corruption sur
+                               marches/silence hierarchique, lien avec un
+                               reseau criminel fictif, relation avec le
+                               president, crise politique au grade de general
+    policeMoral.ts             dilemmes moraux deja presents (superieur, terrain)
+    policeCareer.ts            controles routiers, collegue corrompu, enquete
+                               sensible, informateur, pression politique,
+                               reforme du service
+    gendarmerieTraining.ts     exercices et mediations locales deja presents
+    gendarmerieCareer.ts       barrages routiers, notables locaux, liaison
+                               avec l'armee, reforme de brigade
+    crimeMissions.ts           chaine de missions criminelles fictives (deja
+                               presente : premiere mission, trahison, sortie)
+    crimeCareer.ts             test de loyaute, rivalite de territoire,
+                               trahison interne, vitrine legale, connexion
+                               politique - toujours fictif et abstrait
+    entrepreneurCareer.ts      embauche, contrat public, concurrence, crise
+                               sociale interne, risque de faillite, lobbying
+    civilCareer.ts             etudes/travail, famille, coup dur economique
+                               (bifurcations vers armee/entrepreneuriat/reseau),
+                               carrefour de vie
+    politicsCareer.ts          alliances internes, financement de campagne,
+                               corruption, loyaute/opposition au president,
+                               crise institutionnelle, style de pouvoir
+                               (peut faire evoluer le regime via regimeShift)
     memory.ts                  evenements de rappel (systeme de memoire)
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
@@ -230,16 +248,36 @@ Fait :
   (recrue -> officier -> commandant/colonel -> general), relation avec
   un president qui a sa propre personnalite et peut changer par election,
   et un premier evenement de crise politique au grade de general.
-- Gameplay specifique pour police/gendarmerie (dilemmes moraux),
-  criminalite (chaine de missions + progression Membre -> Figure
-  influente).
+- Chaque filiere a maintenant sa propre boucle de carriere par grade,
+  avec des situations propres (pas un simple clone du modele armee) :
+  - `policeCareer.ts` : controles routiers, collegues veroles, enquetes
+    sensibles, informateurs, pression hierarchique/politique, reforme
+    du service.
+  - `gendarmerieCareer.ts` : barrages routiers, notables locaux,
+    liaison avec l'armee, reforme de brigade.
+  - `crimeCareer.ts` : tests de loyaute, rivalites de territoire,
+    trahisons internes, vitrine legale (blanchiment ou reconversion),
+    connexions politiques — toujours fictif et abstrait.
+  - `entrepreneurCareer.ts` : embauche, contrats publics, concurrence,
+    crise sociale interne, risque de faillite, lobbying politique.
+  - `civilCareer.ts` : etudes ou travail immediat, famille, coup dur
+    economique (avec bifurcations explicites vers armee/entrepreneuriat/
+    reseau fictif), carrefour de vie.
+  - `politicsCareer.ts` : alliances internes, financement de campagne,
+    corruption, loyaute/opposition au president, crise institutionnelle,
+    style de pouvoir (qui peut lui-meme faire evoluer le `regime` du
+    pays via l'effet `regimeShift`).
 - Monde avec regime institutionnel (`WorldState.regime`) et president
   fictif (`WorldState.president`) qui evoluent independamment du joueur,
   y compris des elections qui remplacent le president en regime
-  democratique.
+  democratique. Plusieurs evenements de carriere lisent `state.world.regime`
+  et les traits du president pour adapter leurs conditions (pression
+  policiere plus forte en regime autoritaire/repressif, crise
+  institutionnelle en regime instable, etc).
 - Systeme de memoire (evenements de rappel : ancien superieur police,
-  ancien contact criminel, mentor, + 2 nouveaux specifiques a l'armee :
-  echo de l'affaire de detournement, retour de l'ancien camarade Sory).
+  ancien contact criminel, mentor, echo de l'affaire de detournement et
+  retour de l'ancien camarade Sory pour l'armee, retour du collegue
+  policier corrompu, echo d'un passage a l'opposition politique).
 - Systeme de fins de partie (7 fins : arrestation, president, chute du
   pouvoir, effondrement, retraite, heritage, mort naturelle).
 - Panneau de comparaison de parcours sans hierarchie morale/objective.
@@ -247,16 +285,10 @@ Fait :
 
 Pas encore fait / limites connues :
 - Pas de tests automatises du moteur (aucun framework de test installe).
-- La meme profondeur de carriere par grade (boucle recrutement ->
-  epreuves -> dilemmes contextuels -> promotions, cf. `armyCareer.ts`)
-  n'existe encore que pour l'armee. Police/gendarmerie/crime restent
-  pilotes par des stats/flags plus simples, sans arbres de rang nommes
-  "integre/opportuniste/corrompu" ni gabarit par grade repris de l'armee.
-- L'interconnexion entre filieres est encore limitee a quelques cas
-  precis (pas de generation generique de rencontres entre PNJ de
-  branches differentes).
-- La filiere "vie civile" et "entrepreneuriat" restent moins etoffees
-  que armee/police/crime.
+- L'interconnexion entre filieres reste basee sur des flags/relations
+  ponctuels (ex: `former-criminal-entrepreneur`, `minister-joined-opposition`)
+  plutot que sur une generation generique de rencontres entre PNJ de
+  branches differentes.
 - Le pays fictif (Republique de Verdania) n'a encore ni capitale, ni
   villes/regions, ni partis politiques, ni medias fictifs nommes : seul
   le regime institutionnel et le president sont modelises pour l'instant.
