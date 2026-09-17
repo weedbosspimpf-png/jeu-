@@ -761,6 +761,40 @@ npm run build    # build de production
 npm run typecheck
 ```
 
+## Deploiement (premiere preview mobile testable)
+
+- Le jeu est un Next.js App Router 100% statique cote data (pas de route
+  API, pas de base de donnees) : `next build` genere des pages
+  prerendues (`○ (Static)`), ce qui se deploie sans configuration
+  particuliere sur Vercel (aucun `vercel.json` necessaire).
+- **Pas de Supabase pour l'instant** : la seule persistance est
+  `engine/save.ts` (une sauvegarde locale dans le `localStorage` du
+  navigateur du joueur). Il n'y a aucune donnee partagee entre joueurs
+  ni de compte utilisateur, donc pas de besoin reel de base de donnees
+  serveur a ce stade. A reconsiderer seulement si une mecanique
+  necessitant un etat partage/persistant cote serveur est demandee
+  (classement, sauvegarde multi-appareil, compte joueur...).
+- **Aucune variable d'environnement requise** : aucun appel a un
+  service externe, aucune cle API. `.env`/`.env.local` restent ignores
+  par git (`.gitignore`) au cas ou ça change plus tard.
+- **Mobile / tactile** : `app/layout.tsx` exporte un `viewport` explicite
+  (`width: device-width`, `initialScale: 1`) ; `app/globals.css` fixe
+  une hauteur mini de 44px sur `.choice-button` et 40px sur
+  `.tab-button` (cible tactile confortable), `touch-action: manipulation`
+  sur les boutons, `overflow-x: hidden` + `-webkit-tap-highlight-color:
+  transparent` sur `body`, et une media query a 640px qui empile les
+  onglets en pleine largeur. Verifie manuellement via Playwright en
+  emulation iPhone 13 (creation de personnage, dashboard a onglets,
+  navigation entre onglets, choix d'evenement) : aucun debordement
+  horizontal detecte, tous les elements interactifs restent utilisables
+  au tactile.
+- Pour obtenir une URL de preview Vercel : connecter le repo GitHub
+  `weedbosspimpf-png/jeu-` (branche a deployer) depuis le dashboard
+  Vercel (Add New Project -> Import Git Repository). Aucune commande
+  Vercel n'a ete executee depuis cette session (pas de jeton Vercel
+  disponible dans cet environnement) : c'est a l'utilisateur de
+  connecter son compte Vercel au depot pour obtenir l'URL.
+
 ## Conventions de code a respecter en continuant
 
 - Commentaires rares, uniquement quand le "pourquoi" n'est pas evident.

@@ -23,6 +23,9 @@ body {
   color: var(--text);
   font-family: "Georgia", "Iowan Old Style", "Segoe UI", system-ui, -apple-system, sans-serif;
   line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 h1,
@@ -126,7 +129,8 @@ h3 {
 .choice-button {
   display: block;
   width: 100%;
-  padding: 0.7rem 1rem;
+  min-height: 44px;
+  padding: 0.85rem 1rem;
   margin-bottom: 0.6rem;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -135,6 +139,7 @@ h3 {
   font-size: 0.95rem;
   text-align: left;
   cursor: pointer;
+  touch-action: manipulation;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -484,9 +489,11 @@ h3 {
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--text-muted);
-  padding: 0.4rem 0.9rem;
+  min-height: 40px;
+  padding: 0.55rem 0.9rem;
   font-size: 0.85rem;
   cursor: pointer;
+  touch-action: manipulation;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
