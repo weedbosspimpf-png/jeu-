@@ -114,6 +114,45 @@ export interface Character {
   money: number;
 }
 
+/**
+ * Ambitions secondaires, communes a toutes les filieres : elles evoluent
+ * avec les choix du joueur (jamais imposees), et permettent de deduire
+ * une ambition principale emergente quand aucun objectif n'a ete
+ * explicitement declare (voir data/ambitions.ts, cote presentation).
+ */
+export type AmbitionKey =
+  | "richesse"
+  | "influence"
+  | "prestige"
+  | "reputation"
+  | "politique"
+  | "institutions"
+  | "justice"
+  | "securite"
+  | "independance"
+  | "reforme"
+  | "protectionDesSiens"
+  | "stabilite";
+
+export interface DeclaredGoal {
+  label: string;
+  trackId: CareerTrackId;
+  declaredTurn: number;
+}
+
+/**
+ * Empreinte laissee par une filiere quittee : le passe du personnage ne
+ * disparait jamais quand il change de trajectoire (voir applyEffect,
+ * cas "joinCareer").
+ */
+export interface CareerLegacyEntry {
+  peakRankId: string;
+  turnsServed: number;
+  reputationAtExit: number;
+  influenceAtExit: number;
+  exitTurn: number;
+}
+
 /** Effet declaratif applicable a un etat de jeu : entierement serialisable. */
 export type Effect =
   | { type: "stat"; stat: StatKey; delta: number }
@@ -127,7 +166,9 @@ export type Effect =
   | { type: "joinCareer"; track: CareerTrackId; rankId: string }
   | { type: "presidentTrait"; trait: PresidentTraitKey; delta: number }
   | { type: "regimeShift"; regime: RegimeType }
-  | { type: "relationshipSyncPresident" };
+  | { type: "relationshipSyncPresident" }
+  | { type: "ambition"; key: AmbitionKey; delta: number }
+  | { type: "declareGoal"; label: string };
 
 export interface PendingEffect {
   id: string;
@@ -155,6 +196,9 @@ export interface GameState {
   history: HistoryEntry[];
   turn: number;
   createdAt: number;
+  ambitions: Record<AmbitionKey, number>;
+  declaredGoal: DeclaredGoal | null;
+  careerLegacy: Partial<Record<CareerTrackId, CareerLegacyEntry>>;
 }
 
 export interface EventChoice {
@@ -189,6 +233,10 @@ export interface CareerTrack {
   id: CareerTrackId;
   label: string;
   description: string;
+  /** Objectif professionnel de reference pour cette filiere (affiche au joueur, jamais garanti). */
+  careerGoal: string;
+  /** Ambitions secondaires que cette filiere permet de nourrir en priorite. */
+  focusAmbitions: AmbitionKey[];
   ranks: CareerRank[];
 }
 

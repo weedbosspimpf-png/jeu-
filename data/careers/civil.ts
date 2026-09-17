@@ -4,6 +4,8 @@ export const civilTrack: CareerTrack = {
   id: "civil",
   label: "Vie civile",
   description: "Parcours civil generaliste, tremplin vers n'importe quelle autre filiere.",
+  careerGoal: "Construire une vie personnelle et professionnelle reussie.",
+  focusAmbitions: ["stabilite", "protectionDesSiens", "richesse"],
   ranks: [
     { id: "etudiant", title: "Etudiant / debutant", minTurnsInRank: 0, requirements: () => true },
     {

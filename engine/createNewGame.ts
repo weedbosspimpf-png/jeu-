@@ -1,6 +1,27 @@
-import type { CareerTrackId, GameState, RelationshipState, Stats, StatKey } from "./types";
+import type { AmbitionKey, CareerTrackId, GameState, RelationshipState, Stats, StatKey } from "./types";
 import { clampStat } from "./utils";
 import { createInitialPresident } from "./world";
+
+const AMBITION_KEYS: AmbitionKey[] = [
+  "richesse",
+  "influence",
+  "prestige",
+  "reputation",
+  "politique",
+  "institutions",
+  "justice",
+  "securite",
+  "independance",
+  "reforme",
+  "protectionDesSiens",
+  "stabilite",
+];
+
+function createInitialAmbitions(): Record<AmbitionKey, number> {
+  const ambitions = {} as Record<AmbitionKey, number>;
+  for (const key of AMBITION_KEYS) ambitions[key] = 10;
+  return ambitions;
+}
 
 export interface NewGameParams {
   name: string;
@@ -73,6 +94,9 @@ export function createNewGame(params: NewGameParams): GameState {
     history: [{ turn: 0, age: 18, label: "Le debut d'une nouvelle vie, a 18 ans." }],
     turn: 0,
     createdAt: Date.now(),
+    ambitions: createInitialAmbitions(),
+    declaredGoal: null,
+    careerLegacy: {},
   };
 
   return state;

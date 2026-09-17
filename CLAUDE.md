@@ -147,6 +147,52 @@ entrepreneuriat, vie civile, politique) — voir le detail par fichier
 dans l'arborescence `data/events/` ci-dessous et la section
 "Etat d'avancement actuel".
 
+### Systeme d'ambitions, d'objectifs et de transitions de trajectoire
+Le metier n'est jamais une finalite : chaque personnage a une raison de
+progresser, qui peut evoluer et qui n'enferme jamais dans la premiere
+carriere choisie.
+
+- **Ambitions secondaires** (`AmbitionKey` dans `engine/types.ts`) :
+  richesse, influence, prestige, reputation, politique, institutions,
+  justice, securite, independance, reforme, protectionDesSiens,
+  stabilite. Elles vivent dans `GameState.ambitions` (un score 0-100
+  chacune) et evoluent uniquement via les choix du joueur (nouvel
+  effet `ambition`), jamais automatiquement.
+- **Objectif principal** : soit explicitement declare par le joueur via
+  le nouvel effet `declareGoal` (evenements `*-declare-goal` dans
+  `data/events/ambitionTransitions.ts`, un par filiere), soit deduit de
+  son etat actuel si rien n'a ete declare — voir
+  `data/ambitions.ts::describeCurrentAmbition` (logique de presentation
+  pure, jamais importee par `engine/`).
+- **Objectif professionnel par filiere** : chaque `CareerTrack` porte
+  desormais un `careerGoal` (texte) et des `focusAmbitions` (tags
+  pertinents), declares dans `data/careers/*.ts`.
+- **Transitions de trajectoire dependantes du contexte** (pas d'arbre
+  fixe) : `data/events/ambitionTransitions.ts` couvre les portes de
+  sortie/reconversion explicitement demandees (general populaire vers
+  la politique, carriere militaire qui echoue vers le civil ou
+  l'entrepreneuriat, richesse criminelle accumulee vers une sortie
+  legale, policier/gendarme fortune vers l'entrepreneuriat, civil vers
+  la police). D'autres transitions existaient deja dans les fichiers
+  `*Career.ts` (ex: `political-entry` dans `career.ts`, generique a
+  toute filiere).
+- **Le passe ne disparait jamais** : `GameState.careerLegacy` (peuple
+  automatiquement par l'effet `joinCareer` dans `engine/effects.ts`
+  quand on change reellement de filiere) garde trace du grade atteint,
+  du temps passe et de la reputation/influence au moment de la sortie
+  de chaque filiere quittee.
+- **Affichage** : `components/AmbitionPanel.tsx` montre l'objectif
+  professionnel de la filiere actuelle, l'ambition principale
+  (declaree ou emergente), la progression indicative vers cet objectif,
+  les ambitions secondaires dominantes, les trajectoires disponibles et
+  le passe professionnel conserve.
+
+Prochain increment naturel (demande mais volontairement pas encore fait,
+pour eviter de tout melanger dans un seul changement) : une mecanique
+d'election presidentielle non-deterministe (popularite regionale,
+campagne, adversaires simules) plutot que le seuil de stats actuel sur
+le rang "president" de `data/careers/politics.ts`.
+
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
 carrieres / personnages / relations / economie / politique / interface
@@ -173,10 +219,14 @@ engine/     moteur pur TypeScript, aucune dependance UI, entierement testable
 data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
   stats.ts              labels + stats de depart
   origins.ts             5 origines de personnage (civil, army, police, entrepreneur, crime)
-  world.ts                labels des variables du monde
+  world.ts                labels des variables du monde, du regime et du president
+  ambitions.ts             logique de presentation pure (jamais importee par engine/) :
+                           ambition emergente, progression indicative, trajectoires
+                           disponibles - voir AmbitionPanel.tsx
   endings.ts               liste des fins de partie (Ending[])
   careers/                 un fichier par filiere (civil, army, police, gendarmerie,
-                            entrepreneur, crime, politics), + index.ts qui les agrege
+                            entrepreneur, crime, politics), + index.ts qui les agrege ;
+                            chaque filiere declare aussi careerGoal + focusAmbitions
   events/                  un fichier par theme, + index.ts qui les agrege :
     earlyLife.ts            evenements des premieres annees
     economy.ts               evenements lies au monde (crise, manifestations...)
@@ -209,6 +259,9 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
                                corruption, loyaute/opposition au president,
                                crise institutionnelle, style de pouvoir
                                (peut faire evoluer le regime via regimeShift)
+    ambitionTransitions.ts     declaration d'objectif de long terme par filiere
+                               (effet declareGoal) + transitions dependantes du
+                               contexte (echec, richesse, popularite...)
     memory.ts                  evenements de rappel (systeme de memoire)
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
@@ -281,6 +334,15 @@ Fait :
 - Systeme de fins de partie (7 fins : arrestation, president, chute du
   pouvoir, effondrement, retraite, heritage, mort naturelle).
 - Panneau de comparaison de parcours sans hierarchie morale/objective.
+- Systeme d'ambitions/objectifs/transitions (`GameState.ambitions`,
+  `declaredGoal`, `careerLegacy`) : chaque filiere a un objectif
+  professionnel et des ambitions secondaires propres
+  (`data/careers/*.ts`), le joueur peut declarer un objectif de long
+  terme par filiere (`ambitionTransitions.ts`), des transitions
+  dependantes du contexte existent dans les deux sens entre toutes les
+  filieres, et le passe (grade atteint, reputation/influence a la
+  sortie) est conserve automatiquement dans `careerLegacy` a chaque
+  changement de trajectoire. Affiche dans `AmbitionPanel.tsx`.
 - Build Next.js et typecheck TypeScript verifies fonctionnels.
 
 Pas encore fait / limites connues :
@@ -289,6 +351,13 @@ Pas encore fait / limites connues :
   ponctuels (ex: `former-criminal-entrepreneur`, `minister-joined-opposition`)
   plutot que sur une generation generique de rencontres entre PNJ de
   branches differentes.
+- Pas de mecanique d'election presidentielle non-deterministe (le rang
+  "president" de `politics.ts` reste un seuil de stats) ni de popularite
+  regionale : demande, pas encore fait (voir la section ambitions plus haut).
+- `engine/save.ts` n'a pas de systeme de migration : une sauvegarde
+  anterieure a l'ajout du regime/president ou des ambitions plantera au
+  chargement (champs manquants). Sans consequence pour l'instant (pas
+  d'utilisateurs en production), mais a traiter avant un deploiement reel.
 - Le pays fictif (Republique de Verdania) n'a encore ni capitale, ni
   villes/regions, ni partis politiques, ni medias fictifs nommes : seul
   le regime institutionnel et le president sont modelises pour l'instant.

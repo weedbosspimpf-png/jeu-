@@ -4,6 +4,8 @@ export const armyTrack: CareerTrack = {
   id: "army",
   label: "Armee",
   description: "Filiere militaire : de simple recrue a officier superieur.",
+  careerGoal: "Atteindre le haut commandement et devenir general.",
+  focusAmbitions: ["prestige", "influence", "protectionDesSiens", "politique", "institutions"],
   ranks: [
     {
       id: "recrue",

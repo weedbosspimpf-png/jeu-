@@ -105,6 +105,17 @@ export function applyEffect(state: GameState, effect: Effect): void {
       break;
     }
     case "joinCareer": {
+      const previousTrack = state.career.currentTrack;
+      if (previousTrack && previousTrack !== effect.track && state.career.currentRankId) {
+        const firstEntry = state.career.history.find((h) => h.trackId === previousTrack);
+        state.careerLegacy[previousTrack] = {
+          peakRankId: state.career.currentRankId,
+          turnsServed: state.turn - (firstEntry?.since ?? state.turn),
+          reputationAtExit: state.character.stats.reputation,
+          influenceAtExit: state.character.stats.influence,
+          exitTurn: state.turn,
+        };
+      }
       state.career.currentTrack = effect.track;
       state.career.currentRankId = effect.rankId;
       state.career.turnsInRank = 0;
@@ -114,6 +125,18 @@ export function applyEffect(state: GameState, effect: Effect): void {
         rankId: effect.rankId,
         since: state.turn,
       });
+      break;
+    }
+    case "ambition": {
+      state.ambitions[effect.key] = clampStat(state.ambitions[effect.key] + effect.delta);
+      break;
+    }
+    case "declareGoal": {
+      state.declaredGoal = {
+        label: effect.label,
+        trackId: state.career.currentTrack ?? "civil",
+        declaredTurn: state.turn,
+      };
       break;
     }
     default: {

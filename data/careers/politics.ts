@@ -5,6 +5,8 @@ export const politicsTrack: CareerTrack = {
   label: "Politique",
   description:
     "Filiere politique, accessible depuis n'importe quelle autre trajectoire une fois l'influence suffisante.",
+  careerGoal: "Atteindre les plus hautes fonctions politiques.",
+  focusAmbitions: ["politique", "influence", "reforme", "institutions"],
   ranks: [
     {
       id: "militant",

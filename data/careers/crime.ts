@@ -5,6 +5,8 @@ export const crimeTrack: CareerTrack = {
   label: "Reseau (fictif)",
   description:
     "Trajectoire criminelle entierement fictive et abstraite, traitee comme mecanique narrative uniquement.",
+  careerGoal: "Construire un reseau criminel fictif et devenir une figure influente du milieu.",
+  focusAmbitions: ["richesse", "influence", "reputation", "independance"],
   ranks: [
     { id: "membre", title: "Membre du groupe", minTurnsInRank: 0, requirements: () => true },
     {

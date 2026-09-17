@@ -4,6 +4,8 @@ export const policeTrack: CareerTrack = {
   id: "police",
   label: "Police",
   description: "Filiere policiere : de l'ecole jusqu'aux hautes responsabilites.",
+  careerGoal: "Atteindre le commandement ou la direction du service.",
+  focusAmbitions: ["justice", "reputation", "richesse", "influence", "politique"],
   ranks: [
     { id: "eleve", title: "Eleve agent", minTurnsInRank: 0, requirements: () => true },
     {

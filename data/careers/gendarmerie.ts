@@ -4,6 +4,8 @@ export const gendarmerieTrack: CareerTrack = {
   id: "gendarmerie",
   label: "Gendarmerie",
   description: "Filiere militaire de securite interieure.",
+  careerGoal: "Atteindre le haut commandement de la gendarmerie.",
+  focusAmbitions: ["securite", "prestige", "influence", "politique"],
   ranks: [
     { id: "eleve-gendarme", title: "Eleve gendarme", minTurnsInRank: 0, requirements: () => true },
     {

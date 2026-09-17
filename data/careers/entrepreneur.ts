@@ -4,6 +4,8 @@ export const entrepreneurTrack: CareerTrack = {
   id: "entrepreneur",
   label: "Entrepreneuriat",
   description: "Filiere economique : de l'activite independante a la reussite influente.",
+  careerGoal: "Construire une entreprise majeure ou un groupe economique.",
+  focusAmbitions: ["richesse", "prestige", "influence", "politique"],
   ranks: [
     { id: "independant", title: "Independant", minTurnsInRank: 0, requirements: () => true },
     {
