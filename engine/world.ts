@@ -22,6 +22,8 @@ export function createInitialPresident(sinceTurn: number): PresidentProfile {
       ambition: randomInt(40, 75),
       corruption: randomInt(25, 50),
       institutionalRespect: randomInt(35, 65),
+      militarySupport: randomInt(40, 65),
+      legitimacy: randomInt(50, 75),
     },
     sinceTurn,
   };
@@ -125,6 +127,10 @@ function maybeHoldElection(state: GameState): string | null {
   if (regime !== "democracy_stable" && regime !== "democracy_fragile" && regime !== "transitional") {
     return null;
   }
+  // Si le joueur occupe lui-meme la presidence, sa sortie du pouvoir passe
+  // par la mecanique de reelection jouable (data/events/presidencyGovernance.ts),
+  // jamais par ce remplacement automatique en arriere-plan.
+  if (state.career.currentRankId === "president") return null;
   const yearsInOffice = state.turn - state.world.president.sinceTurn;
   if (yearsInOffice < 6) return null;
   if (randomInt(1, 100) > 12) return null;

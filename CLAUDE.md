@@ -187,11 +187,52 @@ carriere choisie.
   les ambitions secondaires dominantes, les trajectoires disponibles et
   le passe professionnel conserve.
 
-Prochain increment naturel (demande mais volontairement pas encore fait,
-pour eviter de tout melanger dans un seul changement) : une mecanique
-d'election presidentielle non-deterministe (popularite regionale,
-campagne, adversaires simules) plutot que le seuil de stats actuel sur
-le rang "president" de `data/careers/politics.ts`.
+### Modes d'accession au pouvoir supreme
+La presidence ne s'obtient plus par un simple seuil de stats : elle
+passe toujours par une des voies simulees ci-dessous, et continue au-dela
+(gouverner n'est pas une fin de partie).
+
+- **`engine/powerBids.ts`** (nouveau module, pur) : calcule un score
+  abstrait de reussite (`computePowerBidScore`) pour chaque mode
+  (`election`, `crisis-transition`, `coup`), a partir des stats du
+  personnage, du contexte du pays (`world.values`, regime, traits du
+  president en place) et du nombre de soutiens (relations `allie`/
+  `partenaire`). Pour une election, le joueur est compare a des rivaux
+  fictifs generes a la volee (jamais persistes) : une forte popularite
+  n'y garantit jamais la victoire.
+- **Effets moteur ajoutes** (`engine/types.ts` + `engine/effects.ts`) :
+  `resolvePresidentialElection`, `resolveCrisisTransition`,
+  `resolveCoupAttempt` (posent des flags `*-result-pending`/`*-won`,
+  lus par les evenements de suivi) et `becomePresident` (fixe le profil
+  du president sur celui du joueur, avec une legitimite et un soutien
+  militaire qui dependent du mode d'acces : election ~75 de legitimite,
+  transition ~45, coup ~15).
+- **`data/events/powerAccession.ts`** (nouveau) : campagne (meetings,
+  tournee regionale, debat, mobilisation - avec effets differencies par
+  region via le nouvel effet `regionalPopularity`), candidature et
+  election (defaite jamais fatale au jeu, y compris pour un president
+  sortant qui perd sa reelection), transition de crise institutionnelle
+  (accessible depuis la politique ou depuis un general d'armee), et une
+  tentative de prise de pouvoir par la force (`army-coup-attempt`,
+  extremement rare : `weight: 0.4`, conditions tres restrictives,
+  traitement entierement abstrait — aucune procedure operationnelle,
+  juste des variables comme l'autorite, le soutien militaire ou la
+  stabilite du pays ; un echec entraine l'arrestation).
+- **`data/events/presidencyGovernance.ts`** (nouveau) : la phase de
+  gouvernement qui suit toujours l'accession au pouvoir (politique
+  economique, securitaire, relations internationales, puis reelection
+  ou succession volontaire) — jamais de fin de partie automatique a la
+  prise de fonction.
+- **Popularite regionale** : `Character.regionalPopularity` (nord,
+  centre, sud, capitale) evolue independamment de la stat `popularity`
+  globale, affichee dans `AmbitionPanel.tsx` pour la filiere politique.
+- **Fins de partie ajustees** (`data/endings.ts`) : l'ancienne fin
+  "president" (qui terminait le jeu des la prise de fonction) est
+  supprimee ; `power-loss` couvre desormais aussi la chute d'un
+  president dont la reputation ou la legitimite s'effondre, et une
+  nouvelle fin `presidential-legacy` couvre une sortie volontaire du
+  pouvoir (flag `voluntary-succession`), avec un epilogue qui mentionne
+  la maniere dont le pouvoir avait ete obtenu.
 
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
@@ -211,6 +252,9 @@ engine/     moteur pur TypeScript, aucune dependance UI, entierement testable
                      effets differes via pendingEffects)
   endings.ts        moteur de fins de partie generique (checkEnding)
   simulation.ts      orchestrateur d'un tour (advanceTurn = 1 an)
+  powerBids.ts        calcul abstrait (jamais operationnel) de la reussite d'une
+                      tentative d'acceder au pouvoir : election (avec rivaux
+                      fictifs generes a la volee), transition de crise, coup
   createNewGame.ts   assemble un GameState initial a partir des donnees d'origine
   save.ts            serialisation localStorage (GameState est 100% JSON-serialisable,
                       AUCUNE fonction n'est jamais stockee dans le state)
@@ -262,6 +306,13 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
     ambitionTransitions.ts     declaration d'objectif de long terme par filiere
                                (effet declareGoal) + transitions dependantes du
                                contexte (echec, richesse, popularite...)
+    powerAccession.ts          campagne (avec popularite regionale), election
+                               presidentielle non-deterministe, transition de
+                               crise institutionnelle, tentative de prise de
+                               pouvoir par la force (rarissime, abstraite)
+    presidencyGovernance.ts    la phase de gouvernement une fois president :
+                               economie, securite, relations internationales,
+                               reelection ou succession volontaire
     memory.ts                  evenements de rappel (systeme de memoire)
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
@@ -331,8 +382,11 @@ Fait :
   ancien contact criminel, mentor, echo de l'affaire de detournement et
   retour de l'ancien camarade Sory pour l'armee, retour du collegue
   policier corrompu, echo d'un passage a l'opposition politique).
-- Systeme de fins de partie (7 fins : arrestation, president, chute du
-  pouvoir, effondrement, retraite, heritage, mort naturelle).
+- Systeme de fins de partie (arrestation, chute du pouvoir - y compris
+  d'un president -, sortie volontaire de la presidence, effondrement,
+  retraite, heritage, mort naturelle). La fin "president" automatique a
+  la prise de fonction a ete supprimee : gouverner est desormais une
+  phase de jeu, pas une fin.
 - Panneau de comparaison de parcours sans hierarchie morale/objective.
 - Systeme d'ambitions/objectifs/transitions (`GameState.ambitions`,
   `declaredGoal`, `careerLegacy`) : chaque filiere a un objectif
@@ -343,6 +397,12 @@ Fait :
   filieres, et le passe (grade atteint, reputation/influence a la
   sortie) est conserve automatiquement dans `careerLegacy` a chaque
   changement de trajectoire. Affiche dans `AmbitionPanel.tsx`.
+- Systeme d'accession au pouvoir a 3 voies (electorale, transition de
+  crise, prise de pouvoir par la force - rarissime et abstraite), avec
+  resultats calcules par `engine/powerBids.ts` (jamais garantis par la
+  seule popularite), popularite regionale, et une phase de gouvernement
+  qui suit toujours l'accession (`presidencyGovernance.ts`) : voir la
+  section "Modes d'accession au pouvoir supreme" plus haut.
 - Build Next.js et typecheck TypeScript verifies fonctionnels.
 
 Pas encore fait / limites connues :
@@ -351,13 +411,15 @@ Pas encore fait / limites connues :
   ponctuels (ex: `former-criminal-entrepreneur`, `minister-joined-opposition`)
   plutot que sur une generation generique de rencontres entre PNJ de
   branches differentes.
-- Pas de mecanique d'election presidentielle non-deterministe (le rang
-  "president" de `politics.ts` reste un seuil de stats) ni de popularite
-  regionale : demande, pas encore fait (voir la section ambitions plus haut).
+- Les rivaux electoraux sont generes a la volee et jamais persistes :
+  pas de roster de candidats fictifs recurrents avec leur propre
+  historique (demande dans une des iterations, simplifie pour rester
+  gerable).
 - `engine/save.ts` n'a pas de systeme de migration : une sauvegarde
-  anterieure a l'ajout du regime/president ou des ambitions plantera au
-  chargement (champs manquants). Sans consequence pour l'instant (pas
-  d'utilisateurs en production), mais a traiter avant un deploiement reel.
+  anterieure a l'ajout du regime/president, des ambitions ou de
+  l'accession au pouvoir plantera au chargement (champs manquants).
+  Sans consequence pour l'instant (pas d'utilisateurs en production),
+  mais a traiter avant un deploiement reel.
 - Le pays fictif (Republique de Verdania) n'a encore ni capitale, ni
   villes/regions, ni partis politiques, ni medias fictifs nommes : seul
   le regime institutionnel et le president sont modelises pour l'instant.

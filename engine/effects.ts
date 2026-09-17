@@ -1,5 +1,6 @@
-import type { Effect, GameState, RelationshipState } from "./types";
+import type { Effect, GameState, PowerAccessionMode, RelationshipState } from "./types";
 import { clamp, clampStat } from "./utils";
+import { resolvePowerBid } from "./powerBids";
 
 function ensureRelationship(state: GameState, npcId: string): RelationshipState {
   const existing = state.relationships[npcId];
@@ -137,6 +138,68 @@ export function applyEffect(state: GameState, effect: Effect): void {
         trackId: state.career.currentTrack ?? "civil",
         declaredTurn: state.turn,
       };
+      break;
+    }
+    case "regionalPopularity": {
+      state.character.regionalPopularity[effect.region] = clampStat(
+        state.character.regionalPopularity[effect.region] + effect.delta
+      );
+      break;
+    }
+    case "resolvePresidentialElection": {
+      const { won } = resolvePowerBid(state, "election");
+      state.flags["election-result-pending"] = true;
+      state.flags["election-won"] = won;
+      break;
+    }
+    case "resolveCrisisTransition": {
+      const { won } = resolvePowerBid(state, "crisis-transition");
+      state.flags["transition-result-pending"] = true;
+      state.flags["transition-won"] = won;
+      break;
+    }
+    case "resolveCoupAttempt": {
+      const { won } = resolvePowerBid(state, "coup");
+      state.flags["coup-result-pending"] = true;
+      state.flags["coup-won"] = won;
+      break;
+    }
+    case "becomePresident": {
+      const stats = state.character.stats;
+      const legitimacyByMode: Record<PowerAccessionMode, number> = {
+        election: 75,
+        "crisis-transition": 45,
+        coup: 15,
+      };
+      const reputationDeltaByMode: Record<PowerAccessionMode, number> = {
+        election: 20,
+        "crisis-transition": 8,
+        coup: -10,
+      };
+      const militarySupportByMode: Record<PowerAccessionMode, number> = {
+        election: 45,
+        "crisis-transition": 55,
+        coup: 70,
+      };
+      state.world.president = {
+        name: state.character.name,
+        traits: {
+          integrity: stats.integrity,
+          authority: stats.authority,
+          popularity: stats.popularity,
+          ambition: stats.ambition,
+          corruption: clampStat(stats.greed + stats.opportunism - stats.integrity / 2),
+          institutionalRespect: stats.integrity,
+          militarySupport: militarySupportByMode[effect.mode],
+          legitimacy: legitimacyByMode[effect.mode],
+        },
+        sinceTurn: state.turn,
+      };
+      state.powerAccessionMode = effect.mode;
+      state.flags["became-president"] = true;
+      state.character.stats.reputation = clampStat(
+        state.character.stats.reputation + reputationDeltaByMode[effect.mode]
+      );
       break;
     }
     default: {

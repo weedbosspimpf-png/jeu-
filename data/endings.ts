@@ -12,27 +12,42 @@ export const ENDINGS: Ending[] = [
       `Sa trajectoire criminelle se termine derriere les barreaux, a ${state.character.age} ans.`,
   },
   {
-    id: "president",
-    title: "President de la Republique",
-    category: "president",
-    priority: 90,
-    condition: (state) => state.career.currentRankId === "president",
-    epilogue: (state) =>
-      `A ${state.character.age} ans, ${state.character.name} accede a la magistrature supreme de ` +
-      `${state.world.countryName}. Le nom restera dans l'histoire du pays.`,
-  },
-  {
     id: "power-loss",
     title: "Chute du pouvoir",
     category: "power-loss",
     priority: 85,
     condition: (state) =>
-      state.career.currentTrack === "politics" &&
-      (state.career.currentRankId === "ministre" || state.career.currentRankId === "elu") &&
-      state.character.stats.reputation <= 10,
+      (state.career.currentTrack === "politics" &&
+        (state.career.currentRankId === "ministre" || state.career.currentRankId === "elu") &&
+        state.character.stats.reputation <= 10) ||
+      (state.career.currentRankId === "president" &&
+        (state.character.stats.reputation <= 10 || state.world.president.traits.legitimacy <= 10)),
     epilogue: (state) =>
-      `Rattrape par un scandale, ${state.character.name} perd tout credit politique et est ecarte ` +
-      `du pouvoir a ${state.character.age} ans.`,
+      state.career.currentRankId === "president"
+        ? `Sa legitimite s'est effondree : ${state.character.name} perd le pouvoir a ${state.character.age} ans, ` +
+          `dans les conditions memes qui l'y avaient porte.`
+        : `Rattrape par un scandale, ${state.character.name} perd tout credit politique et est ecarte ` +
+          `du pouvoir a ${state.character.age} ans.`,
+  },
+  {
+    id: "presidential-legacy",
+    title: "Fin de mandat presidentiel",
+    category: "president",
+    priority: 88,
+    condition: (state) => state.flags["voluntary-succession"] === true,
+    epilogue: (state) => {
+      const modeLabel =
+        state.powerAccessionMode === "election"
+          ? "elu par la population"
+          : state.powerAccessionMode === "crisis-transition"
+            ? "porte au pouvoir par une transition institutionnelle"
+            : "arrive au pouvoir par la force";
+      return (
+        `${state.character.name} quitte volontairement la presidence de ${state.world.countryName} ` +
+        `a ${state.character.age} ans, apres y avoir ete ${modeLabel}. Son heritage restera juge a l'aune ` +
+        `de la maniere dont il ou elle y est arrive.`
+      );
+    },
   },
   {
     id: "total-downfall",

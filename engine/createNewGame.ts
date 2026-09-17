@@ -1,6 +1,22 @@
-import type { AmbitionKey, CareerTrackId, GameState, RelationshipState, Stats, StatKey } from "./types";
+import type {
+  AmbitionKey,
+  CareerTrackId,
+  GameState,
+  RegionId,
+  RelationshipState,
+  Stats,
+  StatKey,
+} from "./types";
 import { clampStat } from "./utils";
 import { createInitialPresident } from "./world";
+
+const REGION_KEYS: RegionId[] = ["nord", "centre", "sud", "capitale"];
+
+function createInitialRegionalPopularity(): Record<RegionId, number> {
+  const regional = {} as Record<RegionId, number>;
+  for (const key of REGION_KEYS) regional[key] = 15;
+  return regional;
+}
 
 const AMBITION_KEYS: AmbitionKey[] = [
   "richesse",
@@ -59,6 +75,7 @@ export function createNewGame(params: NewGameParams): GameState {
       originId: params.originId,
       stats,
       money: params.startingMoney,
+      regionalPopularity: createInitialRegionalPopularity(),
     },
     world: {
       countryName: params.countryName,
@@ -97,6 +114,7 @@ export function createNewGame(params: NewGameParams): GameState {
     ambitions: createInitialAmbitions(),
     declaredGoal: null,
     careerLegacy: {},
+    powerAccessionMode: null,
   };
 
   return state;

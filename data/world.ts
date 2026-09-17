@@ -1,4 +1,4 @@
-import type { PresidentTraitKey, RegimeType, WorldKey } from "@/engine/types";
+import type { PresidentTraitKey, RegimeType, RegionId, WorldKey } from "@/engine/types";
 
 /**
  * Aucun regime n'est presente comme "bon" ou "mauvais" : ces libelles ne
@@ -21,6 +21,15 @@ export const PRESIDENT_TRAIT_LABELS: Record<PresidentTraitKey, string> = {
   ambition: "Ambition",
   corruption: "Corruption",
   institutionalRespect: "Respect des institutions",
+  militarySupport: "Soutien de l'armee",
+  legitimacy: "Legitimite",
+};
+
+export const REGION_LABELS: Record<RegionId, string> = {
+  nord: "Region Nord",
+  centre: "Region Centre",
+  sud: "Region Sud",
+  capitale: "Capitale",
 };
 
 export const WORLD_LABELS: Record<WorldKey, string> = {

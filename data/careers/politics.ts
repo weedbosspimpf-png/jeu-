@@ -43,14 +43,21 @@ export const politicsTrack: CareerTrack = {
       ],
     },
     {
+      id: "candidat",
+      title: "Candidat a la presidence",
+      minTurnsInRank: 1,
+      requirements: (state) =>
+        state.character.stats.influence >= 80 && state.character.stats.reputation >= 60,
+    },
+    {
       id: "president",
       title: "President",
-      minTurnsInRank: 4,
-      requirements: (state) =>
-        state.character.stats.influence >= 90 &&
-        state.character.stats.reputation >= 75 &&
-        state.career.performance >= 75,
-      onPromote: [{ type: "stat", stat: "reputation", delta: 20 }],
+      minTurnsInRank: 1,
+      // La presidence ne s'obtient jamais par simple seuil de stats : elle
+      // passe toujours par une des voies simulees dans
+      // data/events/powerAccession.ts (electorale, transition de crise,
+      // coup), qui posent ce flag via l'effet becomePresident.
+      requirements: (state) => state.flags["became-president"] === true,
     },
   ],
 };

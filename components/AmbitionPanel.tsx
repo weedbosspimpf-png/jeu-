@@ -1,6 +1,7 @@
 import type { GameState } from "@/engine/types";
 import { CAREER_TRACKS } from "@/data/careers";
 import { getCurrentRank } from "@/engine/careers";
+import { REGION_LABELS } from "@/data/world";
 import {
   AMBITION_LABELS,
   computeGoalProgress,
@@ -9,6 +10,12 @@ import {
   listAvailableTransitions,
 } from "@/data/ambitions";
 import { StatBar } from "./StatBar";
+
+const POWER_ACCESSION_LABELS: Record<string, string> = {
+  election: "Elu par la population",
+  "crisis-transition": "Porte au pouvoir par une transition institutionnelle",
+  coup: "Arrive au pouvoir par la force",
+};
 
 export function AmbitionPanel({ state }: { state: GameState }) {
   const current = getCurrentRank(state, CAREER_TRACKS);
@@ -50,6 +57,27 @@ export function AmbitionPanel({ state }: { state: GameState }) {
           <StatBar key={key} label={AMBITION_LABELS[key]} value={value} />
         ))}
       </div>
+
+      {state.career.currentTrack === "politics" && (
+        <>
+          <h3 className="muted small">Popularite par region</h3>
+          <div className="stat-grid">
+            {(Object.keys(REGION_LABELS) as (keyof typeof REGION_LABELS)[]).map((region) => (
+              <StatBar
+                key={region}
+                label={REGION_LABELS[region]}
+                value={state.character.regionalPopularity[region]}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {state.powerAccessionMode && (
+        <p className="muted small">
+          Mode d&apos;accession au pouvoir : {POWER_ACCESSION_LABELS[state.powerAccessionMode]}
+        </p>
+      )}
 
       <h3 className="muted small">Trajectoires disponibles</h3>
       <ul className="history-list">

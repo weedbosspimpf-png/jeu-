@@ -61,7 +61,19 @@ export type PresidentTraitKey =
   | "popularity"
   | "ambition"
   | "corruption"
-  | "institutionalRespect";
+  | "institutionalRespect"
+  | "militarySupport"
+  | "legitimacy";
+
+/**
+ * Voie par laquelle un personnage a accede a la presidence : influence
+ * durablement sa legitimite et la maniere dont il doit ensuite gouverner
+ * (voir becomePresident et data/events/presidencyGovernance.ts).
+ */
+export type PowerAccessionMode = "election" | "crisis-transition" | "coup";
+
+/** Regions fictives du pays, utilisees pour une popularite qui varie geographiquement. */
+export type RegionId = "nord" | "centre" | "sud" | "capitale";
 
 /**
  * Le president a sa propre personnalite, independante de la relation que
@@ -112,6 +124,8 @@ export interface Character {
   originId: string;
   stats: Stats;
   money: number;
+  /** Popularite politique, differente d'une region a l'autre du pays. */
+  regionalPopularity: Record<RegionId, number>;
 }
 
 /**
@@ -168,7 +182,12 @@ export type Effect =
   | { type: "regimeShift"; regime: RegimeType }
   | { type: "relationshipSyncPresident" }
   | { type: "ambition"; key: AmbitionKey; delta: number }
-  | { type: "declareGoal"; label: string };
+  | { type: "declareGoal"; label: string }
+  | { type: "regionalPopularity"; region: RegionId; delta: number }
+  | { type: "resolvePresidentialElection" }
+  | { type: "resolveCrisisTransition" }
+  | { type: "resolveCoupAttempt" }
+  | { type: "becomePresident"; mode: PowerAccessionMode };
 
 export interface PendingEffect {
   id: string;
@@ -199,6 +218,7 @@ export interface GameState {
   ambitions: Record<AmbitionKey, number>;
   declaredGoal: DeclaredGoal | null;
   careerLegacy: Partial<Record<CareerTrackId, CareerLegacyEntry>>;
+  powerAccessionMode: PowerAccessionMode | null;
 }
 
 export interface EventChoice {

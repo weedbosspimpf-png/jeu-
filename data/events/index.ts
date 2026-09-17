@@ -16,6 +16,8 @@ import { entrepreneurCareerEvents } from "./entrepreneurCareer";
 import { civilCareerEvents } from "./civilCareer";
 import { politicsCareerEvents } from "./politicsCareer";
 import { ambitionTransitionEvents } from "./ambitionTransitions";
+import { powerAccessionEvents } from "./powerAccession";
+import { presidencyGovernanceEvents } from "./presidencyGovernance";
 import { memoryEvents } from "./memory";
 
 export const ALL_EVENTS: GameEvent[] = [
@@ -36,5 +38,7 @@ export const ALL_EVENTS: GameEvent[] = [
   ...civilCareerEvents,
   ...politicsCareerEvents,
   ...ambitionTransitionEvents,
+  ...powerAccessionEvents,
+  ...presidencyGovernanceEvents,
   ...memoryEvents,
 ];
