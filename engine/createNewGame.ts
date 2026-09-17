@@ -1,5 +1,6 @@
 import type { CareerTrackId, GameState, RelationshipState, Stats, StatKey } from "./types";
 import { clampStat } from "./utils";
+import { createInitialPresident } from "./world";
 
 export interface NewGameParams {
   name: string;
@@ -52,6 +53,8 @@ export function createNewGame(params: NewGameParams): GameState {
         socialTension: 30,
         militaryPower: 50,
       },
+      regime: "democracy_fragile",
+      president: createInitialPresident(0),
     },
     career: {
       currentTrack: params.startingCareer?.track ?? null,

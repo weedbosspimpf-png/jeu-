@@ -77,6 +77,33 @@ export function applyEffect(state: GameState, effect: Effect): void {
       state.career.performance = clamp(state.career.performance + effect.delta, 0, 100);
       break;
     }
+    case "presidentTrait": {
+      const traits = state.world.president.traits;
+      traits[effect.trait] = clampStat(traits[effect.trait] + effect.delta);
+      break;
+    }
+    case "regimeShift": {
+      state.world.regime = effect.regime;
+      break;
+    }
+    case "relationshipSyncPresident": {
+      const existing = state.relationships["president"];
+      if (!existing) {
+        state.relationships["president"] = {
+          npcId: "president",
+          name: state.world.president.name,
+          role: "President de la Republique",
+          trust: 40,
+          loyalty: 40,
+          influence: 40,
+          status: "superieur",
+          history: [],
+        };
+      } else {
+        existing.name = state.world.president.name;
+      }
+      break;
+    }
     case "joinCareer": {
       state.career.currentTrack = effect.track;
       state.career.currentRankId = effect.rankId;

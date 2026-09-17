@@ -17,7 +17,13 @@ export type StatKey =
   | "integrity"
   | "wealth"
   | "reputation"
-  | "influence";
+  | "influence"
+  | "opportunism"
+  | "empathy"
+  | "authority"
+  | "greed"
+  | "popularity"
+  | "publicTrust";
 
 export type Stats = Record<StatKey, number>;
 
@@ -41,10 +47,38 @@ export type WorldKey =
   | "socialTension"
   | "militaryPower";
 
+export type RegimeType =
+  | "democracy_stable"
+  | "democracy_fragile"
+  | "authoritarian"
+  | "repressive"
+  | "transitional"
+  | "unstable";
+
+export type PresidentTraitKey =
+  | "integrity"
+  | "authority"
+  | "popularity"
+  | "ambition"
+  | "corruption"
+  | "institutionalRespect";
+
+/**
+ * Le president a sa propre personnalite, independante de la relation que
+ * le joueur entretient avec lui (voir relationships["president"]).
+ */
+export interface PresidentProfile {
+  name: string;
+  traits: Record<PresidentTraitKey, number>;
+  sinceTurn: number;
+}
+
 export interface WorldState {
   countryName: string;
   population: number;
   values: Record<WorldKey, number>;
+  regime: RegimeType;
+  president: PresidentProfile;
 }
 
 export interface RelationshipState {
@@ -90,7 +124,10 @@ export type Effect =
   | { type: "world"; key: WorldKey; delta: number }
   | { type: "flag"; flag: string; value: boolean }
   | { type: "careerPerformance"; delta: number }
-  | { type: "joinCareer"; track: CareerTrackId; rankId: string };
+  | { type: "joinCareer"; track: CareerTrackId; rankId: string }
+  | { type: "presidentTrait"; trait: PresidentTraitKey; delta: number }
+  | { type: "regimeShift"; regime: RegimeType }
+  | { type: "relationshipSyncPresident" };
 
 export interface PendingEffect {
   id: string;

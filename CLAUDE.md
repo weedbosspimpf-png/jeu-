@@ -103,6 +103,50 @@ Pas de fin unique : reussite, echec, changement de carriere, retraite,
 perte de pouvoir, mort, devenir une personnalite importante, devenir
 president, laisser un heritage.
 
+### Principe narratif approfondi (ajoute apres le prototype initial)
+Le joueur ne choisit pas seulement une carriere : il construit
+*progressivement quel genre de personne il devient a l'interieur de cette
+carriere*. Un meme metier (ex: l'armee) doit pouvoir produire des
+trajectoires totalement differentes selon les choix faits a chaque grade.
+
+- **Profil multi-dimensionnel** : en plus des 13 stats d'origine, 6
+  dimensions supplementaires existent (`opportunism`, `empathy`,
+  `authority`, `greed`, `popularity`, `publicTrust`, voir
+  `data/stats.ts`). Aucune combinaison n'est presentee comme "la bonne" :
+  un personnage peut etre loyal ET corrompu, integre ET tres ambitieux.
+- **Choix contextuels par grade** : les evenements de carriere lisent
+  `state.career.currentRankId` pour proposer des dilemmes adaptes au
+  niveau de responsabilite (recrue = camaraderie/discipline, officier =
+  commandement/corruption ponctuelle, colonel/commandant = ressources et
+  reseaux d'influence, general = relations avec le president et crises
+  politiques majeures). Voir `data/events/armyCareer.ts` pour le modele
+  de reference (filiere armee), a repliquer pour police/gendarmerie/
+  crime/entrepreneuriat/politique/vie civile.
+- **Gouvernement vivant** : `WorldState` porte desormais un `regime`
+  (type institutionnel : democratie stable/fragile, autoritaire,
+  repressif, transition, instable — jamais qualifie de bon/mauvais) et un
+  `president` avec sa propre personnalite (`traits` : integrite,
+  autorite, popularite, ambition, corruption, respect des institutions),
+  independante de la relation que le joueur entretient avec lui. Les deux
+  evoluent dans `engine/world.ts::worldTick` (derive + eventuelle election
+  qui remplace le president en regime democratique, sans que la relation
+  du joueur avec l'ancien president ne se transfere).
+- **Relation joueur/president** : modelisee comme une `relationship`
+  ordinaire (`npcId: "president"`), synchronisee sur le president actuel
+  via l'effet `relationshipSyncPresident` (declenche a la promotion
+  General). Elle peut donc changer completement d'un president a l'autre,
+  comme demande ("un general peut etre loyal a un president et avoir une
+  relation completement differente avec son successeur").
+- **Nouveaux effets generiques ajoutes a engine/** (parce qu'ils
+  representaient un vrai nouveau concept, pas juste du contenu) :
+  `presidentTrait`, `regimeShift`, `relationshipSyncPresident`.
+
+Prochaine etape prevue (voir aussi limites connues) : repliquer la meme
+profondeur (choix contextuels par grade/reputation/corruption, boucle
+recrutement -> epreuves -> missions -> dilemmes -> promotions) pour
+police, gendarmerie, criminalite fictive, entrepreneuriat, politique et
+vie civile, en s'appuyant sur `armyCareer.ts` comme gabarit.
+
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
 carrieres / personnages / relations / economie / politique / interface
@@ -140,6 +184,10 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
     relationships.ts         evenements de relation (mentor, rival)
     endgame.ts                declencheurs de fins (retraite, enquete policiere...)
     armyTraining.ts           les 7 epreuves militaires + affectation finale
+    armyCareer.ts              boucle de carriere par grade (corruption,
+                               opportunisme, empathie, lien avec le
+                               president, crise politique) - gabarit a
+                               repliquer pour les autres filieres
     policeMoral.ts             dilemmes moraux police/gendarmerie
     gendarmerieTraining.ts     evenements propres a la gendarmerie
     crimeMissions.ts           chaine de missions criminelles fictives
@@ -172,13 +220,26 @@ ajouter une entree dans `data/`, jamais modifier `engine/`.
 Fait :
 - Prototype jouable complet (creation de personnage a 18 ans, choix
   d'orientation, sauvegarde locale).
-- 13 statistiques, 5 origines de depart, 7 filieres de carriere.
+- 19 statistiques (13 initiales + 6 dimensions de profil : opportunisme,
+  empathie, autorite, cupidite, popularite, confiance des autres),
+  5 origines de depart, 7 filieres de carriere.
 - Moteur d'evenements generique avec effets immediats/differes/caches.
-- Gameplay specifique pour armee (epreuves notees), police/gendarmerie
-  (dilemmes moraux), criminalite (chaine de missions + progression
-  Membre -> Figure influente).
-- Systeme de memoire (au moins 3 evenements de rappel : ancien superieur,
-  ancien contact criminel, mentor).
+- Gameplay specifique pour armee : epreuves de formation notees, PUIS
+  boucle de carriere par grade (`armyCareer.ts`) avec dilemmes de
+  corruption/opportunisme/integrite/empathie distincts a chaque niveau
+  (recrue -> officier -> commandant/colonel -> general), relation avec
+  un president qui a sa propre personnalite et peut changer par election,
+  et un premier evenement de crise politique au grade de general.
+- Gameplay specifique pour police/gendarmerie (dilemmes moraux),
+  criminalite (chaine de missions + progression Membre -> Figure
+  influente).
+- Monde avec regime institutionnel (`WorldState.regime`) et president
+  fictif (`WorldState.president`) qui evoluent independamment du joueur,
+  y compris des elections qui remplacent le president en regime
+  democratique.
+- Systeme de memoire (evenements de rappel : ancien superieur police,
+  ancien contact criminel, mentor, + 2 nouveaux specifiques a l'armee :
+  echo de l'affaire de detournement, retour de l'ancien camarade Sory).
 - Systeme de fins de partie (7 fins : arrestation, president, chute du
   pouvoir, effondrement, retraite, heritage, mort naturelle).
 - Panneau de comparaison de parcours sans hierarchie morale/objective.
@@ -186,17 +247,19 @@ Fait :
 
 Pas encore fait / limites connues :
 - Pas de tests automatises du moteur (aucun framework de test installe).
-- Les trajectoires morales de la police restent pilotees par des
-  stats/flags plutot que par des arbres de rang distincts nommes
-  "integre/opportuniste/corrompu".
+- La meme profondeur de carriere par grade (boucle recrutement ->
+  epreuves -> dilemmes contextuels -> promotions, cf. `armyCareer.ts`)
+  n'existe encore que pour l'armee. Police/gendarmerie/crime restent
+  pilotes par des stats/flags plus simples, sans arbres de rang nommes
+  "integre/opportuniste/corrompu" ni gabarit par grade repris de l'armee.
 - L'interconnexion entre filieres est encore limitee a quelques cas
   precis (pas de generation generique de rencontres entre PNJ de
   branches differentes).
 - La filiere "vie civile" et "entrepreneuriat" restent moins etoffees
   que armee/police/crime.
-- Pas encore de systeme de scenarios politiques de crise avances
-  (le rang "president" existe mais peu d'evenements specifiques a la
-  presidence elle-meme).
+- Le pays fictif (Republique de Verdania) n'a encore ni capitale, ni
+  villes/regions, ni partis politiques, ni medias fictifs nommes : seul
+  le regime institutionnel et le president sont modelises pour l'instant.
 - `npm audit` signale des CVE Next.js plus larges qui ne se corrigent
   qu'en passant a Next 16 (breaking change) : pas fait, a decider avec
   l'utilisateur si ca devient pertinent (deploiement public notamment).

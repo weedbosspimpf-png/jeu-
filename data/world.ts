@@ -1,4 +1,27 @@
-import type { WorldKey } from "@/engine/types";
+import type { PresidentTraitKey, RegimeType, WorldKey } from "@/engine/types";
+
+/**
+ * Aucun regime n'est presente comme "bon" ou "mauvais" : ces libelles ne
+ * font que nommer une configuration institutionnelle, qui change les
+ * regles et situations rencontrees par le joueur.
+ */
+export const REGIME_LABELS: Record<RegimeType, string> = {
+  democracy_stable: "Democratie stable",
+  democracy_fragile: "Democratie fragile",
+  authoritarian: "Regime autoritaire",
+  repressive: "Regime repressif",
+  transitional: "Periode de transition",
+  unstable: "Etat instable",
+};
+
+export const PRESIDENT_TRAIT_LABELS: Record<PresidentTraitKey, string> = {
+  integrity: "Integrite",
+  authority: "Autorite",
+  popularity: "Popularite",
+  ambition: "Ambition",
+  corruption: "Corruption",
+  institutionalRespect: "Respect des institutions",
+};
 
 export const WORLD_LABELS: Record<WorldKey, string> = {
   economy: "Economie",

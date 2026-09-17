@@ -25,7 +25,8 @@ export function advanceTurn(state: GameState, registry: Registry): TurnResult {
   state.turn += 1;
   state.character.age += 1;
 
-  worldTick(state);
+  const worldLog = worldTick(state);
+  if (worldLog) log.push(worldLog);
 
   const pendingLog = resolvePendingEffects(state);
   log.push(...pendingLog);
@@ -36,7 +37,7 @@ export function advanceTurn(state: GameState, registry: Registry): TurnResult {
   state.history.push({
     turn: state.turn,
     age: state.character.age,
-    label: promotionLog ?? `Annee ${state.character.age} ans.`,
+    label: promotionLog ?? worldLog ?? `Annee ${state.character.age} ans.`,
   });
 
   const nextEvent = pickNextEvent(state, registry.events);

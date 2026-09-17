@@ -5,6 +5,7 @@ import { careerEvents } from "./career";
 import { relationshipEvents } from "./relationships";
 import { endgameEvents } from "./endgame";
 import { armyTrainingEvents } from "./armyTraining";
+import { armyCareerEvents } from "./armyCareer";
 import { policeMoralEvents } from "./policeMoral";
 import { gendarmerieTrainingEvents } from "./gendarmerieTraining";
 import { crimeMissionEvents } from "./crimeMissions";
@@ -17,6 +18,7 @@ export const ALL_EVENTS: GameEvent[] = [
   ...relationshipEvents,
   ...endgameEvents,
   ...armyTrainingEvents,
+  ...armyCareerEvents,
   ...policeMoralEvents,
   ...gendarmerieTrainingEvents,
   ...crimeMissionEvents,

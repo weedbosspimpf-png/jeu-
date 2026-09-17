@@ -76,6 +76,73 @@ export const memoryEvents: GameEvent[] = [
     ],
   },
   {
+    id: "army-embezzlement-echo",
+    title: "Le prix du silence, ou de la denonciation",
+    description:
+      "Des annees apres l'affaire des fonds de l'unite, ton ancien superieur croise a nouveau ta route, dans une position tres differente.",
+    category: "memory",
+    once: true,
+    condition: (state) =>
+      state.character.age >= 38 &&
+      (state.flags["reported-superior-embezzlement"] === true || state.flags["army-superior-embezzlement"] === true) &&
+      state.relationships["mentor"] !== undefined,
+    choices: [
+      {
+        id: "reconcile-superior",
+        label: "Tenter une reconciliation",
+        effects: [
+          { type: "relationship", npcId: "mentor", trust: 15, loyalty: 10 },
+          { type: "stat", stat: "diplomacy", delta: 4 },
+        ],
+      },
+      {
+        id: "leverage-past",
+        label: "Te servir de ce passe commun pour obtenir un appui",
+        effects: [
+          { type: "stat", stat: "opportunism", delta: 6 },
+          { type: "stat", stat: "influence", delta: 6 },
+        ],
+      },
+      {
+        id: "keep-distance",
+        label: "Garder tes distances",
+        effects: [],
+      },
+    ],
+  },
+  {
+    id: "army-recruit-secret-echo",
+    title: "Sory se souvient",
+    description:
+      "L'ancien camarade de tes debuts dans l'armee, Sory, refait surface. Ce qui s'est passe entre vous a l'epoque n'a pas ete oublie.",
+    category: "memory",
+    once: true,
+    condition: (state) =>
+      state.character.age >= 30 &&
+      (state.flags["leveraged-camarade-secret"] === true) &&
+      state.relationships["camarade"] !== undefined,
+    choices: [
+      {
+        id: "make-amends",
+        label: "Faire amende honorable",
+        effects: [
+          { type: "relationship", npcId: "camarade", trust: 15 },
+          { type: "stat", stat: "integrity", delta: 4 },
+        ],
+      },
+      {
+        id: "use-leverage-again",
+        label: "Te servir a nouveau de cet ascendant sur lui",
+        effects: [
+          { type: "stat", stat: "opportunism", delta: 6 },
+          { type: "stat", stat: "greed", delta: 4 },
+          { type: "relationship", npcId: "camarade", trust: -15 },
+          { type: "relationshipStatus", npcId: "camarade", status: "ennemi" },
+        ],
+      },
+    ],
+  },
+  {
     id: "mentor-crosses-path-again",
     title: "Ton mentor reapparait",
     description:

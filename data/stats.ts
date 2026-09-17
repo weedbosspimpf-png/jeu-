@@ -14,6 +14,12 @@ export const STAT_LABELS: Record<StatKey, string> = {
   wealth: "Richesse",
   reputation: "Reputation",
   influence: "Influence",
+  opportunism: "Opportunisme",
+  empathy: "Empathie",
+  authority: "Autorite",
+  greed: "Cupidite",
+  popularity: "Popularite",
+  publicTrust: "Confiance des autres",
 };
 
 export const BASE_STATS: Stats = {
@@ -30,4 +36,10 @@ export const BASE_STATS: Stats = {
   wealth: 20,
   reputation: 20,
   influence: 10,
+  opportunism: 30,
+  empathy: 45,
+  authority: 20,
+  greed: 25,
+  popularity: 15,
+  publicTrust: 50,
 };
