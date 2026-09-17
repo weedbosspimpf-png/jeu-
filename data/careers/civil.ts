@@ -13,6 +13,12 @@ export const civilTrack: CareerTrack = {
       minTurnsInRank: 0,
       requirements: () => true,
       baseSalary: 300,
+      responsibilities: {
+        objective: "Choisir une premiere orientation et t'y engager.",
+        challenges: ["Etudes ou premier emploi", "Decouverte de tes propres priorites"],
+        risks: ["Precarite", "Absence de direction claire"],
+        opportunities: ["Toutes les trajectoires restent ouvertes"],
+      },
     },
     {
       id: "employe",
@@ -20,6 +26,12 @@ export const civilTrack: CareerTrack = {
       minTurnsInRank: 1,
       requirements: (state) => state.character.stats.intelligence >= 45 && state.career.performance >= 40,
       baseSalary: 1200,
+      responsibilities: {
+        objective: "Stabiliser ta situation professionnelle et personnelle.",
+        challenges: ["Stabilite financiere", "Vie de famille", "Engagement associatif eventuel"],
+        risks: ["Coup dur economique", "Stagnation professionnelle"],
+        opportunities: ["Acces au statut de cadre", "Bifurcation vers une autre filiere"],
+      },
     },
     {
       id: "cadre",
@@ -29,6 +41,12 @@ export const civilTrack: CareerTrack = {
         state.character.stats.leadership >= 50 && state.career.performance >= 55,
       onPromote: [{ type: "stat", stat: "wealth", delta: 10 }],
       baseSalary: 3000,
+      responsibilities: {
+        objective: "Construire une vie confortable et une reputation locale.",
+        challenges: ["Responsabilites professionnelles accrues", "Reseau social", "Vie de famille"],
+        risks: ["Deception professionnelle durable"],
+        opportunities: ["Carrefour de vie vers armee/police/entrepreneuriat/politique"],
+      },
     },
   ],
 };

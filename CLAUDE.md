@@ -359,6 +359,37 @@ prudence).
   fait ressurgir l'origine douteuse d'une fortune des annees plus tard.
 - **Affichage** : `components/FinancesPanel.tsx`.
 
+### Chaque progression cree de nouveaux defis (pas juste de meilleures stats)
+Une promotion ne doit jamais etre uniquement une augmentation de
+statistiques : elle doit changer la nature des problemes rencontres.
+
+- **`CareerRank.responsibilities`** (nouveau champ declaratif, dans
+  `data/careers/*.ts`, pour les 7 filieres et tous leurs rangs) :
+  `{ objective, challenges[], risks[], opportunities[] }`. Purement
+  descriptif, affiche par `CareerPanel.tsx` — permet a chaque rang de
+  raconter ce qu'il change reellement (ex: recrue = formation/discipline ;
+  general = strategie globale/relation avec le president/succession).
+- **Deux directions hierarchiques distinctes** : `CareerState.superiorTrust`
+  et `CareerState.subordinateMorale` (nouveaux champs, reinitialises a
+  50 a chaque `joinCareer`), avec deux nouveaux effets du meme nom. On
+  peut etre appreci  de ses hommes et mal vu de sa hierarchie, ou
+  l'inverse — voir `data/events/leadershipManagement.ts`
+  (`leadership-favor-troops-or-superiors` force cet arbitrage explicite ;
+  `leadership-crisis-of-confidence`/`leadership-superior-scrutiny` sont
+  les consequences si l'une des deux jauges s'effondre).
+- **Contenu propre a chaque palier superieur, pas juste plus dur** :
+  `army-colonel-resource-rivalry` (rivalites entre officiers superieurs,
+  propre au colonel), `entrepreneur-board-conflict` (conseil
+  d'administration, propre au dirigeant), `politics-elu-alliance-choice`
+  (majorite/opposition/independant, propre a l'elu).
+- **Le president gere plusieurs domaines en tension, jamais un bouton
+  unique** : `presidency-power-consolidation` (institutions vs services
+  publics vs negociation avec l'opposition vs alliances - chaque choix
+  a un cout ailleurs) et `presidency-military-relationship` (budget
+  militaire vs professionnalisation vs economie, avec un vrai impact sur
+  `PresidentTraitKey.militarySupport`), dans
+  `data/events/leadershipManagement.ts`.
+
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
 carrieres / personnages / relations / economie / politique / interface
@@ -466,6 +497,10 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
     personalFinance.ts         investissement a risque reel, opportunites
                                financieres douteuses (accepter/refuser/
                                denoncer), objectif financier de long terme
+    leadershipManagement.ts    confiance des superieurs vs moral des
+                               subordonnes (arbitrage explicite), contenu
+                               propre au colonel/dirigeant/elu, gestion
+                               presidentielle multi-domaines avec compromis
     memory.ts                  evenements de rappel (systeme de memoire)
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
@@ -576,6 +611,12 @@ Fait :
   politique, niveau de vie dynamique, origine du patrimoine conservee)
   : voir la section "Economie personnelle : patrimoine, revenus et
   influence financiere" plus haut. Affiche dans `FinancesPanel.tsx`.
+- Chaque rang de chaque filiere porte desormais un descripteur
+  objectif/defis/risques/opportunites (`CareerRank.responsibilities`,
+  affiche par `CareerPanel.tsx`), et deux jauges hierarchiques
+  distinctes (confiance des superieurs, moral des subordonnes) creent
+  des arbitrages reels a partir du grade d'officier : voir la section
+  "Chaque progression cree de nouveaux defis" plus haut.
 - Build Next.js et typecheck TypeScript verifies fonctionnels.
 
 Pas encore fait / limites connues :

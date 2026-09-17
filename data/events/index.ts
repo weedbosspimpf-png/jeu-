@@ -22,6 +22,7 @@ import { personalityMomentEvents } from "./personalityMoments";
 import { careerDisciplineEvents } from "./careerDiscipline";
 import { socialActionEvents } from "./socialActions";
 import { personalFinanceEvents } from "./personalFinance";
+import { leadershipManagementEvents } from "./leadershipManagement";
 import { memoryEvents } from "./memory";
 
 export const ALL_EVENTS: GameEvent[] = [
@@ -48,5 +49,6 @@ export const ALL_EVENTS: GameEvent[] = [
   ...careerDisciplineEvents,
   ...socialActionEvents,
   ...personalFinanceEvents,
+  ...leadershipManagementEvents,
   ...memoryEvents,
 ];

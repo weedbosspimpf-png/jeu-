@@ -102,6 +102,8 @@ export function createNewGame(params: NewGameParams): GameState {
       history: params.startingCareer
         ? [{ trackId: params.startingCareer.track, rankId: params.startingCareer.rankId, since: 0 }]
         : [],
+      superiorTrust: 50,
+      subordinateMorale: 50,
     },
     relationships: { [mentor.npcId]: mentor },
     flags: {},

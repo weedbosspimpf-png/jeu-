@@ -128,6 +128,8 @@ export function applyEffect(state: GameState, effect: Effect): void {
       state.career.currentRankId = effect.rankId;
       state.career.turnsInRank = 0;
       state.career.performance = 50;
+      state.career.superiorTrust = 50;
+      state.career.subordinateMorale = 50;
       state.career.history.push({
         trackId: effect.track,
         rankId: effect.rankId,
@@ -225,6 +227,14 @@ export function applyEffect(state: GameState, effect: Effect): void {
         state.finances.wealthBySource[effect.source] = (state.finances.wealthBySource[effect.source] ?? 0) + profit;
       }
       state.flags["last-investment-succeeded"] = succeeded;
+      break;
+    }
+    case "superiorTrust": {
+      state.career.superiorTrust = clampStat(state.career.superiorTrust + effect.delta);
+      break;
+    }
+    case "subordinateMorale": {
+      state.career.subordinateMorale = clampStat(state.career.subordinateMorale + effect.delta);
       break;
     }
     default: {

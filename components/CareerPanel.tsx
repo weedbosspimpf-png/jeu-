@@ -1,9 +1,11 @@
 import type { GameState } from "@/engine/types";
 import { CAREER_TRACKS } from "@/data/careers";
 import { getCurrentRank } from "@/engine/careers";
+import { StatBar } from "./StatBar";
 
 export function CareerPanel({ state }: { state: GameState }) {
   const current = getCurrentRank(state, CAREER_TRACKS);
+  const responsibilities = current?.rank.responsibilities;
 
   return (
     <section className="panel">
@@ -25,6 +27,28 @@ export function CareerPanel({ state }: { state: GameState }) {
             </div>
           </div>
           <p className="muted small">Anciennete dans ce grade : {state.career.turnsInRank} an(s)</p>
+
+          <div className="stat-grid">
+            <StatBar label="Confiance de mes superieurs" value={state.career.superiorTrust} />
+            <StatBar label="Moral de mes subordonnes" value={state.career.subordinateMorale} />
+          </div>
+
+          {responsibilities && (
+            <>
+              <p className="muted small">
+                <strong>Objectif :</strong> {responsibilities.objective}
+              </p>
+              <p className="muted small">
+                <strong>Defis :</strong> {responsibilities.challenges.join(", ")}
+              </p>
+              <p className="muted small">
+                <strong>Risques :</strong> {responsibilities.risks.join(", ")}
+              </p>
+              <p className="muted small">
+                <strong>Opportunites :</strong> {responsibilities.opportunities.join(", ")}
+              </p>
+            </>
+          )}
         </>
       ) : (
         <p className="muted">Aucune carriere engagee pour le moment.</p>

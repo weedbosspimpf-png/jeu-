@@ -122,6 +122,25 @@ export interface CareerState {
   turnsInRank: number;
   performance: number;
   history: CareerRankRecord[];
+  /**
+   * Deux directions distinctes de gestion hierarchique : la confiance de
+   * mes superieurs et le moral/loyaute de mes subordonnes evoluent
+   * independamment - on peut etre appreci  de ses hommes et mal vu de
+   * sa hierarchie, ou l'inverse.
+   */
+  superiorTrust: number;
+  subordinateMorale: number;
+}
+
+/**
+ * Ce que ce rang change reellement dans le jeu : jamais juste des
+ * chiffres plus hauts. Purement declaratif, affiche par CareerPanel.tsx.
+ */
+export interface CareerResponsibilities {
+  objective: string;
+  challenges: string[];
+  risks: string[];
+  opportunities: string[];
 }
 
 export interface Character {
@@ -219,7 +238,9 @@ export type Effect =
   | { type: "resolveCoupAttempt" }
   | { type: "becomePresident"; mode: PowerAccessionMode }
   | { type: "resolveSocialAction"; cost: number; scale: SocialActionScale }
-  | { type: "resolveInvestment"; amount: number; source: WealthSourceId };
+  | { type: "resolveInvestment"; amount: number; source: WealthSourceId }
+  | { type: "superiorTrust"; delta: number }
+  | { type: "subordinateMorale"; delta: number };
 
 export interface PendingEffect {
   id: string;
@@ -305,6 +326,8 @@ export interface CareerRank {
   onPromote?: Effect[];
   /** Revenu annuel de base a ce rang (avant multiplicateur de performance). Absent ou 0 = pas de salaire fixe. */
   baseSalary?: number;
+  /** Ce que ce rang change reellement en termes de gameplay (objectif/defis/risques/opportunites). */
+  responsibilities?: CareerResponsibilities;
 }
 
 export interface CareerTrack {
