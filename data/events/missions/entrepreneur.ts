@@ -13,6 +13,7 @@ export const entrepreneurMissionEvents: GameEvent[] = [
     category: "mission",
     cooldown: 4,
     condition: (state) => isEntrepreneurActive(state) && state.flags["contrat-majeur-acted"] !== true,
+    scene: "entrepreneur-contrat-briefing",
     mission: {
       id: "contrat-majeur",
       title: "Contrat majeur",
@@ -56,6 +57,7 @@ export const entrepreneurMissionEvents: GameEvent[] = [
     description: "Le contrat est signe, ou la negociation echoue - dans les deux cas, il faut avancer.",
     category: "mission",
     condition: (state) => state.flags["contrat-majeur-acted"] === true,
+    scene: "entrepreneur-contrat-resolution",
     mission: {
       id: "contrat-majeur",
       title: "Contrat majeur",

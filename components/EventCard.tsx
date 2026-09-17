@@ -1,5 +1,6 @@
 import type { GameEvent, GameState } from "@/engine/types";
 import { getAvailableChoices } from "@/engine/events";
+import { SceneIllustration } from "./SceneIllustration";
 
 interface EventCardProps {
   event: GameEvent;
@@ -19,6 +20,7 @@ export function EventCard({ event, state, onChoose }: EventCardProps) {
 
   return (
     <section className={`panel event-card ${mission ? "mission-card" : ""}`}>
+      {event.scene && <SceneIllustration sceneKey={event.scene} />}
       {mission ? (
         <>
           <span className="event-category">{PHASE_LABELS[mission.phase]}</span>

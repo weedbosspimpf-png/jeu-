@@ -294,6 +294,40 @@ h3 {
   margin-top: 1rem;
 }
 
+.scene-illustration {
+  margin: -1.25rem -1.25rem 1rem;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--accent-gold);
+}
+
+.scene-illustration svg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 400 / 160;
+}
+
+.scene-illustration figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.9rem;
+  background: #100c0a;
+}
+
+.scene-location {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-gold);
+}
+
+.scene-caption {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .mission-card {
   border-color: var(--accent-gold);
   background: linear-gradient(160deg, #221a10 0%, var(--bg-panel-raised) 100%);

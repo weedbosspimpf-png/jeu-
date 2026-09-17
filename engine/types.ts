@@ -336,6 +336,14 @@ export interface GameEvent {
   condition: (state: GameState) => boolean;
   choices: EventChoice[];
   mission?: MissionMeta;
+  /**
+   * Cle vers une scene visuelle (voir data/scenes.ts + SceneIllustration.tsx).
+   * Purement une reference (comme mission.id) : l'engine ne sait rien
+   * dessiner, seul le registre cote presentation interprete cette cle.
+   * Optionnel et independant de `mission` : une etape non-mission pourrait
+   * aussi en avoir une un jour.
+   */
+  scene?: string;
 }
 
 export interface CareerRank {

@@ -26,6 +26,7 @@ export const armyMissionEvents: GameEvent[] = [
     condition: (state) =>
       isArmyOfficerTier(state) &&
       state.flags["kambara-briefed"] !== true,
+    scene: "army-kambara-briefing",
     mission: {
       id: "kambara",
       title: "Operation Kambara",
@@ -72,6 +73,7 @@ export const armyMissionEvents: GameEvent[] = [
       "L'operation est engagee. La situation se complique : tes hommes attendent une decision claire, et le temps presse.",
     category: "mission",
     condition: (state) => state.flags["kambara-briefed"] === true && state.flags["kambara-acted"] !== true,
+    scene: "army-kambara-field",
     mission: {
       id: "kambara",
       title: "Operation Kambara",
@@ -117,6 +119,7 @@ export const armyMissionEvents: GameEvent[] = [
     description: "L'operation dans la region de Kambara s'acheve. Le bilan est desormais connu.",
     category: "mission",
     condition: (state) => state.flags["kambara-acted"] === true,
+    scene: "army-kambara-debrief",
     mission: {
       id: "kambara",
       title: "Operation Kambara",

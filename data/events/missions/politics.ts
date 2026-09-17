@@ -13,6 +13,7 @@ export const politicsMissionEvents: GameEvent[] = [
     category: "mission",
     cooldown: 4,
     condition: (state) => isPoliticsActive(state) && state.flags["mobilisation-acted"] !== true,
+    scene: "politics-mobilisation-briefing",
     mission: {
       id: "mobilisation",
       title: "Mobilisation citoyenne",
@@ -58,6 +59,7 @@ export const politicsMissionEvents: GameEvent[] = [
     description: "Le mouvement citoyen atteint son point culminant. Il est temps d'en tirer les enseignements.",
     category: "mission",
     condition: (state) => state.flags["mobilisation-acted"] === true,
+    scene: "politics-mobilisation-resolution",
     mission: {
       id: "mobilisation",
       title: "Mobilisation citoyenne",

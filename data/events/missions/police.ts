@@ -13,6 +13,7 @@ export const policeMissionEvents: GameEvent[] = [
     category: "mission",
     cooldown: 4,
     condition: (state) => isPoliceInvestigator(state) && state.flags["disparition-acted"] !== true,
+    scene: "police-disparition-briefing",
     mission: {
       id: "disparition",
       title: "Enquete : disparition suspecte",
@@ -71,6 +72,7 @@ export const policeMissionEvents: GameEvent[] = [
     description: "Le dossier arrive a son terme. Il est temps de presenter tes conclusions.",
     category: "mission",
     condition: (state) => state.flags["disparition-acted"] === true,
+    scene: "police-disparition-resolution",
     mission: {
       id: "disparition",
       title: "Enquete : disparition suspecte",

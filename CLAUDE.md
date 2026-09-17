@@ -390,6 +390,58 @@ statistiques : elle doit changer la nature des problemes rencontres.
   `PresidentTraitKey.militarySupport`), dans
   `data/events/leadershipManagement.ts`.
 
+### Systeme de scenes visuelles de mission
+Une mission ne doit jamais rester uniquement textuelle : chaque etape
+importante peut afficher une scene visuelle cohérente avec la carriere,
+le grade, le lieu et la situation reelle - jamais une image decorative
+generique.
+
+- **Limite honnete assumee** : cette session n'a acces a aucun outil de
+  generation d'image photorealiste (pas de DALL-E/Imagen/Stable
+  Diffusion disponible). Le systeme livre est donc une illustration
+  **stylisee generee proceduralement en SVG** (silhouettes figuratives,
+  decor simplifie), pas un rendu photo cinematique. L'architecture est
+  concue pour qu'on puisse remplacer ce moteur SVG par de vraies images
+  (illustrations commandees, rendus IA externes...) plus tard sans
+  toucher au moteur ni a `EventCard.tsx` : seule la fonction de rendu
+  dans `SceneIllustration.tsx` changerait.
+- **`GameEvent.scene?: string`** (nouveau champ optionnel dans
+  `engine/types.ts`) : juste une cle, comme `mission.id`. L'engine ne
+  sait rien dessiner ; seul le registre cote presentation interprete
+  cette cle. Independant de `mission` (une etape non-mission pourrait
+  aussi en avoir une).
+- **`data/scenes.ts`** (nouveau, presentation pure) : `SCENES: Record<string,
+  SceneDescriptor>` avec pour chaque cle un lieu, un moment de la
+  journee, un decor (`briefing-room`, `rural-field`, `checkpoint`,
+  `crime-scene`, `office`, `signing-room`, `rally-square`,
+  `council-chamber`), la filiere (pour la couleur de tenue), le nombre
+  de personnages et leur disposition, et la legende affichee. Chaque
+  entree decrit une situation reelle du jeu (ex: `army-kambara-field` =
+  la phase "action" de l'operation Kambara), jamais une scene inventee
+  sans rapport.
+- **`components/SceneIllustration.tsx`** : moteur de rendu SVG
+  parametrique (pas d'images bitmap statiques a maintenir). Palette de
+  ciel selon le moment de la journee, decor selon `backdrop`,
+  personnages en silhouettes a peau brune (identite du jeu : personnages
+  noirs) habilles d'une couleur par filiere (kaki armee, bleu marine
+  police/gendarmerie, costume sombre entrepreneur, rouge/or politique,
+  marine/or presidence), cadre cinematique commun (vignette, bandeau de
+  legende dore) pour une identite visuelle unifiee entre toutes les
+  scenes.
+- **Integration** : `EventCard.tsx` affiche `<SceneIllustration>` en tete
+  de la carte quand `event.scene` est defini, au-dessus du texte, de
+  l'objectif de mission et des choix - jamais a la place. Scene +
+  contexte + action + choix + consequences (`ConsequencesPanel.tsx`
+  existant) restent un seul flux, pas deux ecrans separes.
+- **Missions couvertes pour l'instant** (5 filieres representatives,
+  demande explicite) : `army-kambara-briefing/field/debrief` (3 phases),
+  `police-disparition-briefing/resolution`,
+  `entrepreneur-contrat-briefing/resolution`,
+  `politics-mobilisation-briefing/resolution`,
+  `presidency-budget-briefing/resolution`. Etendre a une nouvelle
+  mission = ajouter une entree dans `data/scenes.ts` + le champ `scene`
+  sur l'evenement concerne, jamais modifier le moteur de rendu.
+
 ### Systeme de missions
 Une "mission" n'est jamais un second moteur : c'est une chaine de
 `GameEvent` existants (memes effets, memes flags, meme moteur
@@ -732,6 +784,11 @@ Pas encore fait / limites connues :
 - Les portraits de personnage restent un avatar-initiales stylise : pas
   d'illustration ni de portrait genere (aucun pipeline d'asset graphique
   disponible dans cette session).
+- Les scenes de mission (`SceneIllustration.tsx`) sont des illustrations
+  stylisees generees en SVG, pas des rendus photorealistes : aucun outil
+  de generation d'image IA n'est disponible dans cette session. Seules
+  5 filieres representatives (11 scenes) sont couvertes pour l'instant ;
+  etoffer les autres missions existantes reste a faire.
 - L'interconnexion entre filieres reste basee sur des flags/relations
   ponctuels (ex: `former-criminal-entrepreneur`, `minister-joined-opposition`)
   plutot que sur une generation generique de rencontres entre PNJ de

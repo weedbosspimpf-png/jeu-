@@ -13,6 +13,7 @@ export const presidencyMissionEvents: GameEvent[] = [
     category: "mission",
     cooldown: 4,
     condition: (state) => isPresident(state) && state.flags["budget-mission-acted"] !== true,
+    scene: "presidency-budget-briefing",
     mission: {
       id: "budget-arbitrage",
       title: "Arbitrage budgetaire",
@@ -67,6 +68,7 @@ export const presidencyMissionEvents: GameEvent[] = [
     description: "L'arbitrage budgetaire est desormais applique.",
     category: "mission",
     condition: (state) => state.flags["budget-mission-acted"] === true,
+    scene: "presidency-budget-resolution",
     mission: {
       id: "budget-arbitrage",
       title: "Arbitrage budgetaire",
