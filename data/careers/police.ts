@@ -7,12 +7,13 @@ export const policeTrack: CareerTrack = {
   careerGoal: "Atteindre le commandement ou la direction du service.",
   focusAmbitions: ["justice", "reputation", "richesse", "influence", "politique"],
   ranks: [
-    { id: "eleve", title: "Eleve agent", minTurnsInRank: 0, requirements: () => true },
+    { id: "eleve", title: "Eleve agent", minTurnsInRank: 0, requirements: () => true, baseSalary: 700 },
     {
       id: "agent",
       title: "Agent de terrain",
       minTurnsInRank: 1,
       requirements: (state) => state.character.stats.discipline >= 45 && state.career.performance >= 40,
+      baseSalary: 1500,
     },
     {
       id: "enqueteur",
@@ -21,6 +22,7 @@ export const policeTrack: CareerTrack = {
       requirements: (state) =>
         state.character.stats.intelligence >= 55 && state.career.performance >= 55,
       onPromote: [{ type: "stat", stat: "reputation", delta: 8 }],
+      baseSalary: 2800,
     },
     {
       id: "responsable",
@@ -31,6 +33,7 @@ export const policeTrack: CareerTrack = {
         state.character.stats.integrity >= 50 &&
         state.career.performance >= 65,
       onPromote: [{ type: "stat", stat: "influence", delta: 15 }],
+      baseSalary: 5000,
     },
   ],
 };

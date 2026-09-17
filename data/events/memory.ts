@@ -8,6 +8,34 @@ import type { GameEvent } from "@/engine/types";
  */
 export const memoryEvents: GameEvent[] = [
   {
+    id: "financial-reputation-echo",
+    title: "Une fortune que l'on questionne",
+    description:
+      "Des annees apres avoir profite d'opportunites financieres douteuses, un journaliste s'interroge publiquement sur l'origine de ta fortune.",
+    category: "memory",
+    once: true,
+    condition: (state) => (state.finances.wealthBySource["douteux"] ?? 0) >= 3000 && state.character.age >= 35,
+    choices: [
+      {
+        id: "accept-scrutiny",
+        label: "Accepter la transparence sur tes finances",
+        effects: [
+          { type: "stat", stat: "integrity", delta: 6 },
+          { type: "stat", stat: "publicTrust", delta: 4 },
+        ],
+        hiddenEffects: [{ type: "stat", stat: "reputation", delta: -5 }],
+      },
+      {
+        id: "deflect-scrutiny",
+        label: "Detourner l'attention et minimiser l'affaire",
+        effects: [
+          { type: "stat", stat: "opportunism", delta: 5 },
+          { type: "stat", stat: "publicTrust", delta: -6 },
+        ],
+      },
+    ],
+  },
+  {
     id: "former-superior-returns",
     title: "Un visage du passe",
     description:

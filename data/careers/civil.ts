@@ -7,12 +7,19 @@ export const civilTrack: CareerTrack = {
   careerGoal: "Construire une vie personnelle et professionnelle reussie.",
   focusAmbitions: ["stabilite", "protectionDesSiens", "richesse"],
   ranks: [
-    { id: "etudiant", title: "Etudiant / debutant", minTurnsInRank: 0, requirements: () => true },
+    {
+      id: "etudiant",
+      title: "Etudiant / debutant",
+      minTurnsInRank: 0,
+      requirements: () => true,
+      baseSalary: 300,
+    },
     {
       id: "employe",
       title: "Employe qualifie",
       minTurnsInRank: 1,
       requirements: (state) => state.character.stats.intelligence >= 45 && state.career.performance >= 40,
+      baseSalary: 1200,
     },
     {
       id: "cadre",
@@ -21,6 +28,7 @@ export const civilTrack: CareerTrack = {
       requirements: (state) =>
         state.character.stats.leadership >= 50 && state.career.performance >= 55,
       onPromote: [{ type: "stat", stat: "wealth", delta: 10 }],
+      baseSalary: 3000,
     },
   ],
 };

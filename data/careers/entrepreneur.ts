@@ -7,12 +7,13 @@ export const entrepreneurTrack: CareerTrack = {
   careerGoal: "Construire une entreprise majeure ou un groupe economique.",
   focusAmbitions: ["richesse", "prestige", "influence", "politique"],
   ranks: [
-    { id: "independant", title: "Independant", minTurnsInRank: 0, requirements: () => true },
+    { id: "independant", title: "Independant", minTurnsInRank: 0, requirements: () => true, baseSalary: 500 },
     {
       id: "chef-entreprise",
       title: "Chef d'entreprise",
       minTurnsInRank: 1,
       requirements: (state) => state.character.money >= 3000 && state.career.performance >= 45,
+      baseSalary: 3000,
     },
     {
       id: "dirigeant",
@@ -23,6 +24,7 @@ export const entrepreneurTrack: CareerTrack = {
         state.character.stats.reputation >= 55 &&
         state.career.performance >= 60,
       onPromote: [{ type: "stat", stat: "influence", delta: 15 }],
+      baseSalary: 9000,
     },
   ],
 };

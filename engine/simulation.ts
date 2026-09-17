@@ -2,6 +2,7 @@ import type { CareerTrack, GameEvent, GameState } from "./types";
 import { worldTick } from "./world";
 import { careerTick } from "./careers";
 import { pickNextEvent, resolvePendingEffects } from "./events";
+import { applyAnnualFinances } from "./finances";
 
 export interface Registry {
   events: GameEvent[];
@@ -27,6 +28,8 @@ export function advanceTurn(state: GameState, registry: Registry): TurnResult {
 
   const worldLog = worldTick(state);
   if (worldLog) log.push(worldLog);
+
+  applyAnnualFinances(state, registry.careerTracks);
 
   const pendingLog = resolvePendingEffects(state);
   log.push(...pendingLog);

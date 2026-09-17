@@ -7,6 +7,7 @@ export * from "./endings";
 export * from "./traits";
 export * from "./powerBids";
 export * from "./socialActions";
+export * from "./finances";
 export * from "./simulation";
 export * from "./save";
 export * from "./createNewGame";

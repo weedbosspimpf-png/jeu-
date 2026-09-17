@@ -2,6 +2,7 @@ import type { Effect, GameState, PowerAccessionMode, RelationshipState } from ".
 import { clamp, clampStat } from "./utils";
 import { resolvePowerBid } from "./powerBids";
 import { computeSocialActionOutcome } from "./socialActions";
+import { resolveInvestmentOutcome } from "./finances";
 
 function ensureRelationship(state: GameState, npcId: string): RelationshipState {
   const existing = state.relationships[npcId];
@@ -34,6 +35,10 @@ export function applyEffect(state: GameState, effect: Effect): void {
     }
     case "money": {
       state.character.money = Math.round(state.character.money + effect.delta);
+      if (effect.source && effect.delta > 0) {
+        state.finances.wealthBySource[effect.source] =
+          (state.finances.wealthBySource[effect.source] ?? 0) + effect.delta;
+      }
       break;
     }
     case "relationship": {
@@ -210,6 +215,16 @@ export function applyEffect(state: GameState, effect: Effect): void {
       state.character.stats.reputation = clampStat(state.character.stats.reputation + outcome.reputationDelta);
       state.character.stats.popularity = clampStat(state.character.stats.popularity + outcome.popularityDelta);
       state.character.stats.publicTrust = clampStat(state.character.stats.publicTrust + outcome.publicTrustDelta);
+      break;
+    }
+    case "resolveInvestment": {
+      state.character.money = Math.round(state.character.money - effect.amount);
+      const { profit, succeeded } = resolveInvestmentOutcome(state, effect.amount);
+      if (succeeded) {
+        state.finances.investments += effect.amount + profit;
+        state.finances.wealthBySource[effect.source] = (state.finances.wealthBySource[effect.source] ?? 0) + profit;
+      }
+      state.flags["last-investment-succeeded"] = succeeded;
       break;
     }
     default: {

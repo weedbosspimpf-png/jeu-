@@ -13,6 +13,7 @@ export const politicsTrack: CareerTrack = {
       title: "Militant",
       minTurnsInRank: 0,
       requirements: (state) => state.character.stats.influence >= 30,
+      baseSalary: 200,
     },
     {
       id: "responsable-local",
@@ -20,6 +21,7 @@ export const politicsTrack: CareerTrack = {
       minTurnsInRank: 1,
       requirements: (state) =>
         state.character.stats.diplomacy >= 45 && state.career.performance >= 45,
+      baseSalary: 1000,
     },
     {
       id: "elu",
@@ -30,6 +32,7 @@ export const politicsTrack: CareerTrack = {
         state.character.stats.charisma >= 50 &&
         state.career.performance >= 55,
       onPromote: [{ type: "stat", stat: "influence", delta: 10 }],
+      baseSalary: 3000,
     },
     {
       id: "ministre",
@@ -41,6 +44,7 @@ export const politicsTrack: CareerTrack = {
         { type: "stat", stat: "influence", delta: 15 },
         { type: "relationshipSyncPresident" },
       ],
+      baseSalary: 6000,
     },
     {
       id: "candidat",
@@ -48,6 +52,7 @@ export const politicsTrack: CareerTrack = {
       minTurnsInRank: 1,
       requirements: (state) =>
         state.character.stats.influence >= 80 && state.character.stats.reputation >= 60,
+      baseSalary: 1000,
     },
     {
       id: "president",
@@ -58,6 +63,7 @@ export const politicsTrack: CareerTrack = {
       // data/events/powerAccession.ts (electorale, transition de crise,
       // coup), qui posent ce flag via l'effet becomePresident.
       requirements: (state) => state.flags["became-president"] === true,
+      baseSalary: 15000,
     },
   ],
 };

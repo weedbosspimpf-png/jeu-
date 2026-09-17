@@ -116,6 +116,14 @@ export function createNewGame(params: NewGameParams): GameState {
     careerLegacy: {},
     powerAccessionMode: null,
     unlockedTraits: [],
+    finances: {
+      annualIncome: 0,
+      annualExpenses: 0,
+      savings: 0,
+      debt: 0,
+      investments: 0,
+      wealthBySource: {},
+    },
   };
 
   return state;

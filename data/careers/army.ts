@@ -12,6 +12,7 @@ export const armyTrack: CareerTrack = {
       title: "Recrue",
       minTurnsInRank: 0,
       requirements: () => true,
+      baseSalary: 800,
     },
     {
       id: "caporal",
@@ -19,6 +20,7 @@ export const armyTrack: CareerTrack = {
       minTurnsInRank: 1,
       requirements: (state) =>
         state.character.stats.discipline >= 45 && state.career.performance >= 40,
+      baseSalary: 1200,
     },
     {
       id: "officier",
@@ -29,6 +31,7 @@ export const armyTrack: CareerTrack = {
         state.character.stats.discipline >= 55 &&
         state.career.performance >= 55,
       onPromote: [{ type: "stat", stat: "reputation", delta: 10 }],
+      baseSalary: 2500,
     },
     {
       id: "commandant",
@@ -43,6 +46,7 @@ export const armyTrack: CareerTrack = {
         { type: "stat", stat: "reputation", delta: 10 },
         { type: "stat", stat: "authority", delta: 10 },
       ],
+      baseSalary: 4500,
     },
     {
       id: "colonel",
@@ -56,6 +60,7 @@ export const armyTrack: CareerTrack = {
         { type: "stat", stat: "influence", delta: 10 },
         { type: "stat", stat: "authority", delta: 15 },
       ],
+      baseSalary: 7000,
     },
     {
       id: "general",
@@ -71,6 +76,7 @@ export const armyTrack: CareerTrack = {
         { type: "stat", stat: "authority", delta: 15 },
         { type: "relationshipSyncPresident" },
       ],
+      baseSalary: 12000,
     },
   ],
 };

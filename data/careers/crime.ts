@@ -8,12 +8,19 @@ export const crimeTrack: CareerTrack = {
   careerGoal: "Construire un reseau criminel fictif et devenir une figure influente du milieu.",
   focusAmbitions: ["richesse", "influence", "reputation", "independance"],
   ranks: [
-    { id: "membre", title: "Membre du groupe", minTurnsInRank: 0, requirements: () => true },
+    {
+      id: "membre",
+      title: "Membre du groupe",
+      minTurnsInRank: 0,
+      requirements: () => true,
+      baseSalary: 400,
+    },
     {
       id: "executant",
       title: "Executant",
       minTurnsInRank: 1,
       requirements: (state) => state.character.stats.loyalty >= 35 && state.career.performance >= 40,
+      baseSalary: 900,
     },
     {
       id: "lieutenant",
@@ -24,6 +31,7 @@ export const crimeTrack: CareerTrack = {
         state.character.stats.intelligence >= 40 &&
         state.career.performance >= 50,
       onPromote: [{ type: "stat", stat: "reputation", delta: -5 }],
+      baseSalary: 1800,
     },
     {
       id: "chef-secteur",
@@ -34,6 +42,7 @@ export const crimeTrack: CareerTrack = {
         state.character.stats.diplomacy >= 45 &&
         state.career.performance >= 55,
       onPromote: [{ type: "stat", stat: "influence", delta: 8 }],
+      baseSalary: 3500,
     },
     {
       id: "chef-reseau",
@@ -44,6 +53,7 @@ export const crimeTrack: CareerTrack = {
         state.character.stats.courage >= 55 &&
         state.career.performance >= 65,
       onPromote: [{ type: "stat", stat: "influence", delta: 15 }],
+      baseSalary: 6000,
     },
     {
       id: "figure-influente",
@@ -54,6 +64,7 @@ export const crimeTrack: CareerTrack = {
         state.character.stats.reputation >= 30 &&
         state.career.performance >= 70,
       onPromote: [{ type: "stat", stat: "influence", delta: 15 }],
+      baseSalary: 10000,
     },
   ],
 };

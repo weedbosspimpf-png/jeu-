@@ -319,6 +319,46 @@ finir la partie.
   reputation, influence, legitimite cote a cote + jauges de risque de la
   filiere actuelle, avec avertissement visuel si un risque est eleve).
 
+### Economie personnelle : patrimoine, revenus et influence financiere
+L'argent est une mecanique de jeu, pas un simple nombre affiche. Deux
+personnages au meme salaire peuvent finir dans des situations
+completement differentes selon leurs comportements (cupidite vs
+prudence).
+
+- **`GameState.finances`** (nouveau) : `annualIncome`, `annualExpenses`,
+  `savings`, `debt`, `investments`, `wealthBySource` (origine cumulee
+  des gains : salaire, entreprise, investissement, heritage, activite
+  sociale, douteux). `Character.money` reste les liquidites
+  immediates ; le patrimoine total n'est jamais stocke, toujours
+  recalcule (`data/finances.ts::computeNetWorth`).
+- **Revenu determine par la carriere** : nouveau champ
+  `CareerRank.baseSalary` declare dans `data/careers/*.ts` (evolue avec
+  le grade), lu generiquement par `engine/finances.ts::applyAnnualFinances`
+  (appele une fois par an dans `advanceTurn`, meme pattern que
+  `careerTick`/`worldTick` — jamais code en dur dans le moteur).
+- **Depenses dependantes du comportement** : le ratio depenses/revenu
+  depend de `cupidite` vs `prudence` (`engine/finances.ts`) : a salaire
+  identique, un personnage prudent epargne davantage, un personnage
+  cupide s'endette davantage. C'est ce qui fait diverger deux
+  personnages partis du meme point.
+- **Investissement a risque reel** (`engine/finances.ts::resolveInvestmentOutcome`
+  + effet `resolveInvestment`) : le succes depend de la prudence, de
+  l'intelligence et du contexte economique du pays, jamais garanti.
+  Evenement : `data/events/personalFinance.ts::personal-investment-opportunity`.
+  Choix financiers douteux (accepter/refuser/denoncer) dans le meme
+  fichier, sans jamais decrire de procedure reelle.
+- **Influence financiere, distincte de l'influence politique**
+  (`data/finances.ts::computeFinancialInfluence`) : depend du
+  patrimoine, des investissements et de la reputation. Les 5 notions
+  (richesse, popularite, influence politique, legitimite, reputation)
+  restent volontairement separees partout dans le code.
+- **Niveau de vie dynamique** (`computeLifestyle`) : Precaire ->
+  Modeste -> Confortable -> Aise -> Riche -> Tres riche, calcule a
+  partir du patrimoine et des dettes.
+- **Memoire** : `financial-reputation-echo` (`data/events/memory.ts`)
+  fait ressurgir l'origine douteuse d'une fortune des annees plus tard.
+- **Affichage** : `components/FinancesPanel.tsx`.
+
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
 carrieres / personnages / relations / economie / politique / interface
@@ -346,6 +386,9 @@ engine/     moteur pur TypeScript, aucune dependance UI, entierement testable
   socialActions.ts    calcule l'effet reel (jamais garanti) d'une action sociale,
                       selon la sincerite percue (integrite/empathie vs
                       cupidite/opportunisme + hasard)
+  finances.ts          revenus/depenses annuels automatiques (applyAnnualFinances,
+                       lit CareerRank.baseSalary generiquement) + risque
+                       d'investissement (resolveInvestmentOutcome)
   createNewGame.ts   assemble un GameState initial a partir des donnees d'origine
   save.ts            serialisation localStorage (GameState est 100% JSON-serialisable,
                       AUCUNE fonction n'est jamais stockee dans le state)
@@ -420,6 +463,9 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
                                "GAME OVER"
     socialActions.ts           dons, fondations, soutien - couteux, a effet
                                contextuel (jamais un bouton "+10 popularite")
+    personalFinance.ts         investissement a risque reel, opportunites
+                               financieres douteuses (accepter/refuser/
+                               denoncer), objectif financier de long terme
     memory.ts                  evenements de rappel (systeme de memoire)
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
@@ -524,6 +570,12 @@ Fait :
   influence, et actions sociales a effet contextuel (jamais un bouton
   automatique) : voir la section "Jauges, avertissements, sanctions et
   actions sociales" plus haut. Affiche dans `ReputationPanel.tsx`.
+- Economie personnelle complete (revenus par carriere/grade, depenses
+  dependantes du comportement, epargne, dettes, investissements a
+  risque reel, influence financiere distincte de l'influence
+  politique, niveau de vie dynamique, origine du patrimoine conservee)
+  : voir la section "Economie personnelle : patrimoine, revenus et
+  influence financiere" plus haut. Affiche dans `FinancesPanel.tsx`.
 - Build Next.js et typecheck TypeScript verifies fonctionnels.
 
 Pas encore fait / limites connues :

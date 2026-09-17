@@ -178,10 +178,29 @@ export interface CareerLegacyEntry {
 /** Ampleur d'une action sociale (voir engine/socialActions.ts) : determine le cout et le potentiel d'effet. */
 export type SocialActionScale = "small" | "medium" | "large";
 
+/** Origine abstraite d'un gain d'argent : conservee pour expliquer la reputation financiere du personnage. */
+export type WealthSourceId = "salaire" | "entreprise" | "investissement" | "heritage" | "activite-sociale" | "douteux";
+
+/**
+ * Etat financier du personnage, distinct des liquidites immediates
+ * (Character.money) : revenus/depenses annuels, epargne accumulee,
+ * dettes, investissements, et l'origine cumulee des gains d'argent.
+ * Le patrimoine total est toujours calcule a partir de ces valeurs
+ * (voir data/finances.ts::computeNetWorth), jamais stocke directement.
+ */
+export interface FinancialState {
+  annualIncome: number;
+  annualExpenses: number;
+  savings: number;
+  debt: number;
+  investments: number;
+  wealthBySource: Partial<Record<WealthSourceId, number>>;
+}
+
 /** Effet declaratif applicable a un etat de jeu : entierement serialisable. */
 export type Effect =
   | { type: "stat"; stat: StatKey; delta: number }
-  | { type: "money"; delta: number }
+  | { type: "money"; delta: number; source?: WealthSourceId }
   | { type: "relationship"; npcId: string; trust?: number; loyalty?: number; influence?: number }
   | { type: "relationshipStatus"; npcId: string; status: RelationshipState["status"] }
   | { type: "relationshipInit"; npcId: string; name: string; role: string }
@@ -199,7 +218,8 @@ export type Effect =
   | { type: "resolveCrisisTransition" }
   | { type: "resolveCoupAttempt" }
   | { type: "becomePresident"; mode: PowerAccessionMode }
-  | { type: "resolveSocialAction"; cost: number; scale: SocialActionScale };
+  | { type: "resolveSocialAction"; cost: number; scale: SocialActionScale }
+  | { type: "resolveInvestment"; amount: number; source: WealthSourceId };
 
 export interface PendingEffect {
   id: string;
@@ -233,6 +253,7 @@ export interface GameState {
   powerAccessionMode: PowerAccessionMode | null;
   /** Identifiants des particularites de personnalite deja debloquees (voir engine/traits.ts). */
   unlockedTraits: string[];
+  finances: FinancialState;
 }
 
 /**
@@ -282,6 +303,8 @@ export interface CareerRank {
   minTurnsInRank: number;
   requirements: (state: GameState) => boolean;
   onPromote?: Effect[];
+  /** Revenu annuel de base a ce rang (avant multiplicateur de performance). Absent ou 0 = pas de salaire fixe. */
+  baseSalary?: number;
 }
 
 export interface CareerTrack {
