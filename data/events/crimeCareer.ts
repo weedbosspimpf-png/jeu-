@@ -92,6 +92,16 @@ export const crimeCareerEvents: GameEvent[] = [
           },
         ],
       },
+      {
+        id: "read-rival-intentions",
+        label: "Percer les vraies intentions du rival avant de repondre",
+        requires: (state) => state.character.stats.perspicacity >= 60 && state.character.stats.diplomacy >= 55,
+        effects: [
+          { type: "stat", stat: "perspicacity", delta: 3 },
+          { type: "stat", stat: "influence", delta: 6 },
+          { type: "money", delta: -100 },
+        ],
+      },
     ],
   },
   {

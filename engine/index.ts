@@ -4,6 +4,8 @@ export * from "./world";
 export * from "./careers";
 export * from "./events";
 export * from "./endings";
+export * from "./traits";
+export * from "./powerBids";
 export * from "./simulation";
 export * from "./save";
 export * from "./createNewGame";

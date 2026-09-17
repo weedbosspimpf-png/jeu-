@@ -6,12 +6,18 @@ import { createNewGame } from "@/engine/createNewGame";
 import { advanceTurn } from "@/engine/simulation";
 import { applyChoice, pickNextEvent } from "@/engine/events";
 import { checkEnding } from "@/engine/endings";
+import { checkNewTraits } from "@/engine/traits";
 import { saveGame, loadGame, clearSave, hasSave } from "@/engine/save";
 import { BASE_STATS } from "@/data/stats";
 import { getOrigin } from "@/data/origins";
 import { ALL_EVENTS } from "@/data/events";
 import { CAREER_TRACKS } from "@/data/careers";
 import { ENDINGS } from "@/data/endings";
+import { PERSONALITY_TRAITS } from "@/data/personalityTraits";
+
+function describeNewTraits(traits: ReturnType<typeof checkNewTraits>): string[] {
+  return traits.map((trait) => `${trait.icon} Particularite developpee : ${trait.label}`);
+}
 
 interface GameStore {
   state: GameState | null;
@@ -59,6 +65,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!state || !currentEvent) return;
     const next = cloneState(state);
     const log = applyChoice(next, currentEvent, choiceId);
+    const newTraits = checkNewTraits(next, PERSONALITY_TRAITS);
     const ending = checkEnding(next, ENDINGS);
     const followUpEvent = ending
       ? null
@@ -68,7 +75,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state: next,
       currentEvent: followUpEvent,
       ending,
-      log: [...log, ...prev.log].slice(0, 30),
+      log: [...describeNewTraits(newTraits), ...log, ...prev.log].slice(0, 30),
     }));
   },
 
@@ -77,13 +84,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!state) return;
     const next = cloneState(state);
     const result = advanceTurn(next, { events: ALL_EVENTS, careerTracks: CAREER_TRACKS });
+    const newTraits = checkNewTraits(result.state, PERSONALITY_TRAITS);
     const ending = checkEnding(result.state, ENDINGS);
     saveGame(result.state);
     set((prev) => ({
       state: result.state,
       currentEvent: ending ? null : result.nextEvent,
       ending,
-      log: [...result.log, ...prev.log].slice(0, 30),
+      log: [...describeNewTraits(newTraits), ...result.log, ...prev.log].slice(0, 30),
     }));
   },
 

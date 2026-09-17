@@ -33,6 +33,9 @@ export function computePowerBidScore(state: GameState, mode: PowerAccessionMode)
   const randomFactor = randomInt(-12, 12);
   const regionalPopularity = averageRegionalPopularity(state);
 
+  // Le sens politique (ruse, malice, manipulation) joue toujours un role
+  // secondaire par rapport au contexte, aux soutiens et a la reputation :
+  // jamais un simple bouton "manipulation = victoire garantie".
   if (mode === "election") {
     return clamp(
       regionalPopularity * 0.25 +
@@ -41,6 +44,7 @@ export function computePowerBidScore(state: GameState, mode: PowerAccessionMode)
         stats.reputation * 0.15 +
         v.economy * 0.1 +
         v.stability * 0.1 +
+        stats.manipulation * 0.03 +
         allies +
         randomFactor,
       0,
@@ -54,6 +58,7 @@ export function computePowerBidScore(state: GameState, mode: PowerAccessionMode)
         stats.influence * 0.25 +
         (100 - v.stability) * 0.15 -
         state.world.president.traits.institutionalRespect * 0.1 +
+        stats.malice * 0.05 +
         allies +
         randomFactor,
       0,
@@ -62,14 +67,19 @@ export function computePowerBidScore(state: GameState, mode: PowerAccessionMode)
   }
 
   // coup : deliberement tres difficile, et penalise par la legitimite
-  // institutionnelle en place et la stabilite du pays.
+  // institutionnelle en place et la stabilite du pays. Une evaluation
+  // prudente prealable (voir army-coup-attempt) apporte une preparation
+  // concrete, pas juste un bonus abstrait.
+  const riskAssessmentBonus = state.flags["coup-risk-assessed"] === true ? 8 : 0;
   return clamp(
     stats.authority * 0.3 +
       stats.influence * 0.2 +
       v.militaryPower * 0.15 -
       v.stability * 0.15 -
       state.world.president.traits.institutionalRespect * 0.1 +
+      stats.ruse * 0.06 +
       allies +
+      riskAssessmentBonus +
       randomFactor -
       25,
     0,

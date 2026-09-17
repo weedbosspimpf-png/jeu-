@@ -147,6 +147,24 @@ export const policeCareerEvents: GameEvent[] = [
         label: "Faire comme si tu n'avais rien vu",
         effects: [{ type: "stat", stat: "opportunism", delta: 3 }],
       },
+      {
+        id: "manipulate-into-leverage",
+        label: "Le laisser croire a ton silence, pour t'en servir plus tard",
+        requires: (state) => state.character.stats.manipulation >= 60 && state.character.stats.malice >= 50,
+        effects: [
+          { type: "stat", stat: "manipulation", delta: 4 },
+          { type: "stat", stat: "influence", delta: 5 },
+          {
+            type: "relationshipInit",
+            npcId: "collegue-corrompu",
+            name: "Brigadier Fofana",
+            role: "Collegue de service",
+          },
+          { type: "relationship", npcId: "collegue-corrompu", trust: -5 },
+          { type: "flag", flag: "leverage-on-collegue-corrompu", value: true },
+        ],
+        hiddenEffects: [{ type: "stat", stat: "integrity", delta: -4 }],
+      },
     ],
   },
   {

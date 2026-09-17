@@ -9,6 +9,7 @@ import { EventCard } from "./EventCard";
 import { HistoryLog } from "./HistoryLog";
 import { ComparisonPanel } from "./ComparisonPanel";
 import { AmbitionPanel } from "./AmbitionPanel";
+import { PersonalityPanel } from "./PersonalityPanel";
 import { useGameStore } from "@/store/useGameStore";
 
 interface GameScreenProps {
@@ -36,11 +37,12 @@ export function GameScreen({ state, currentEvent, log }: GameScreenProps) {
           <CharacterSheet state={state} />
           <CareerPanel state={state} />
           <AmbitionPanel state={state} />
+          <PersonalityPanel state={state} />
         </div>
 
         <div className="column column-main">
           {currentEvent ? (
-            <EventCard event={currentEvent} onChoose={chooseOption} />
+            <EventCard event={currentEvent} state={state} onChoose={chooseOption} />
           ) : (
             <section className="panel event-card">
               <h2>Rien de particulier pour l'instant</h2>

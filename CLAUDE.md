@@ -234,6 +234,56 @@ passe toujours par une des voies simulees ci-dessous, et continue au-dela
   pouvoir (flag `voluntary-succession`), avec un epilogue qui mentionne
   la maniere dont le pouvoir avait ete obtenu.
 
+### Personnalite, malice, ruse et capacites sociales
+Deux personnages avec les memes competences professionnelles peuvent
+diverger completement selon leur maniere de penser et d'agir. Ces
+caracteristiques comportementales ne sont jamais choisies au debut :
+elles emergent des decisions, et aucune n'est jamais bonne ou mauvaise
+en soi.
+
+- **6 nouvelles stats comportementales** (`StatKey` dans
+  `engine/types.ts`) : `malice`, `ruse`, `manipulation`,
+  `perspicacity`, `prudence`, `coolness` (sang-froid). Demarrent basses
+  (`data/stats.ts`) : elles doivent se construire par le jeu, pas partir
+  hautes. S'affichent automatiquement dans `CharacterSheet.tsx` (grille
+  generique existante).
+- **Choix contextuels debloques par une stat comportementale** : nouveau
+  champ optionnel `EventChoice.requires?: (state) => boolean`
+  (`engine/types.ts` + verifie dans `engine/events.ts::applyChoice` et
+  filtre dans `EventCard.tsx` via `getAvailableChoices`). Utilise avec
+  parcimonie sur des evenements existants plutot qu'en dupliquant du
+  contenu : `politics-campaign-activity` (charisme eleve, dans
+  `powerAccession.ts`), `army-coup-attempt` (prudence eleve : evalue
+  d'abord les rapports de force, donne un vrai bonus dans
+  `engine/powerBids.ts` via le flag `coup-risk-assessed`),
+  `politics-institutional-crisis` (sang-froid eleve, `politicsCareer.ts`),
+  `police-corrupt-colleague` (manipulation + malice, `policeCareer.ts`),
+  `crime-rival-faction` (perspicacite + diplomatie, `crimeCareer.ts`).
+  Un evenement dedie, `data/events/personalityMoments.ts`, n'apparait
+  que si la perspicacite est assez haute.
+- **Ruse/malice/manipulation dans `engine/powerBids.ts`** : poids
+  volontairement faible (0.03-0.06) par rapport aux facteurs principaux
+  (0.1-0.3) — jamais un "manipulation = +20% de victoire" mecanique, le
+  contexte et les soutiens restent dominants.
+- **Particularites emergentes ("talents")** : nouveau type
+  `PersonalityTrait` + `GameState.unlockedTraits: string[]` + moteur
+  generique `engine/traits.ts::checkNewTraits` (meme pattern que
+  `checkEnding`/`careerTick` : lit un registre fourni par les donnees,
+  jamais modifie pour en ajouter). Registre dans
+  `data/personalityTraits.ts` (ex: 🧠 Lecture des hommes, ♟️ Stratege,
+  🎙️ Leader charismatique, 🕸️ Architecte de l'ombre...), chacune une
+  combinaison de plusieurs stats, jamais une seule. Debloquees a
+  jamais une fois acquises, annoncees dans le journal
+  (`store/useGameStore.ts` appelle `checkNewTraits` apres chaque choix
+  et chaque annee, comme `checkEnding`).
+- **Profil emergent, jamais stocke** : `data/personality.ts::describeArchetype`
+  recalcule a chaque affichage un archetype (Stratege, Diplomate,
+  Opportuniste, Negociateur, Homme/femme d'influence, Idealiste,
+  Pragmatique...) a partir des stats actuelles — ce n'est pas une classe
+  figee, il peut changer si le comportement change durablement.
+- **Affichage** : `components/PersonalityPanel.tsx` (profil emergent +
+  particularites developpees).
+
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
 carrieres / personnages / relations / economie / politique / interface
@@ -249,8 +299,11 @@ engine/     moteur pur TypeScript, aucune dependance UI, entierement testable
   world.ts          evolution du pays independante du joueur (worldTick)
   careers.ts        progression de carriere generique (careerTick, getCurrentRank)
   events.ts         moteur d'evenements generique (condition -> choix -> consequences,
-                     effets differes via pendingEffects)
+                     effets differes via pendingEffects, choix conditionnels via
+                     EventChoice.requires)
   endings.ts        moteur de fins de partie generique (checkEnding)
+  traits.ts          moteur de particularites de personnalite generique
+                     (checkNewTraits, meme pattern que checkEnding/careerTick)
   simulation.ts      orchestrateur d'un tour (advanceTurn = 1 an)
   powerBids.ts        calcul abstrait (jamais operationnel) de la reussite d'une
                       tentative d'acceder au pouvoir : election (avec rivaux
@@ -267,6 +320,11 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
   ambitions.ts             logique de presentation pure (jamais importee par engine/) :
                            ambition emergente, progression indicative, trajectoires
                            disponibles - voir AmbitionPanel.tsx
+  personality.ts           logique de presentation pure : archetype emergent
+                           (Stratege, Diplomate, Opportuniste...), jamais stocke -
+                           voir PersonalityPanel.tsx
+  personalityTraits.ts     registre des particularites debloquables (PersonalityTrait[]),
+                           chacune une combinaison de plusieurs stats comportementales
   endings.ts               liste des fins de partie (Ending[])
   careers/                 un fichier par filiere (civil, army, police, gendarmerie,
                             entrepreneur, crime, politics), + index.ts qui les agrege ;
@@ -313,6 +371,8 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
     presidencyGovernance.ts    la phase de gouvernement une fois president :
                                economie, securite, relations internationales,
                                reelection ou succession volontaire
+    personalityMoments.ts      evenements qui n'existent que grace a une stat
+                               comportementale assez haute (ex: perspicacite)
     memory.ts                  evenements de rappel (systeme de memoire)
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
@@ -403,6 +463,13 @@ Fait :
   seule popularite), popularite regionale, et une phase de gouvernement
   qui suit toujours l'accession (`presidencyGovernance.ts`) : voir la
   section "Modes d'accession au pouvoir supreme" plus haut.
+- Systeme de personnalite comportementale (malice, ruse, manipulation,
+  perspicacite, prudence, sang-froid), choix contextuels debloques par
+  ces stats (`EventChoice.requires`) sans devenir des boutons magiques,
+  particularites emergentes ("talents") via `engine/traits.ts`, et
+  archetype de personnalite recalcule sans jamais figer de classe : voir
+  la section "Personnalite, malice, ruse et capacites sociales" plus
+  haut. Affiche dans `PersonalityPanel.tsx`.
 - Build Next.js et typecheck TypeScript verifies fonctionnels.
 
 Pas encore fait / limites connues :

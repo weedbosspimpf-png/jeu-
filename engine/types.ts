@@ -23,7 +23,13 @@ export type StatKey =
   | "authority"
   | "greed"
   | "popularity"
-  | "publicTrust";
+  | "publicTrust"
+  | "malice"
+  | "ruse"
+  | "manipulation"
+  | "perspicacity"
+  | "prudence"
+  | "coolness";
 
 export type Stats = Record<StatKey, number>;
 
@@ -219,6 +225,22 @@ export interface GameState {
   declaredGoal: DeclaredGoal | null;
   careerLegacy: Partial<Record<CareerTrackId, CareerLegacyEntry>>;
   powerAccessionMode: PowerAccessionMode | null;
+  /** Identifiants des particularites de personnalite deja debloquees (voir engine/traits.ts). */
+  unlockedTraits: string[];
+}
+
+/**
+ * Une particularite de personnalite emerge d'une combinaison de stats
+ * comportementales, jamais d'une seule stat isolee : elle raconte que le
+ * personnage a developpe une facon de penser/agir reconnaissable, sans
+ * devenir une classe figee (voir data/personalityTraits.ts).
+ */
+export interface PersonalityTrait {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+  condition: (state: GameState) => boolean;
 }
 
 export interface EventChoice {
@@ -227,6 +249,13 @@ export interface EventChoice {
   effects: Effect[];
   hiddenEffects?: Effect[];
   delayedEffects?: { delay: number; effects: Effect[]; note?: string }[];
+  /**
+   * Rend ce choix disponible seulement si la condition est vraie (ex: une
+   * stat comportementale assez haute debloque une solution alternative).
+   * Absent = toujours disponible. Jamais un simple bonus numerique : une
+   * vraie option narrative supplementaire.
+   */
+  requires?: (state: GameState) => boolean;
 }
 
 export interface GameEvent {

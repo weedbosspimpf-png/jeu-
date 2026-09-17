@@ -21,9 +21,16 @@ export function pickNextEvent(state: GameState, registry: GameEvent[]): GameEven
   return pickWeighted(available, (e) => e.weight ?? 1);
 }
 
+export function getAvailableChoices(state: GameState, event: GameEvent) {
+  return event.choices.filter((c) => !c.requires || c.requires(state));
+}
+
 export function applyChoice(state: GameState, event: GameEvent, choiceId: string): string[] {
   const choice = event.choices.find((c) => c.id === choiceId);
   if (!choice) throw new Error(`Choix inconnu ${choiceId} pour l'evenement ${event.id}`);
+  if (choice.requires && !choice.requires(state)) {
+    throw new Error(`Choix ${choiceId} indisponible dans cet etat pour l'evenement ${event.id}`);
+  }
 
   const log: string[] = [`${event.title} -> ${choice.label}`];
 

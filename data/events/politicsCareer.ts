@@ -211,6 +211,16 @@ export const politicsCareerEvents: GameEvent[] = [
         effects: [{ type: "stat", stat: "diplomacy", delta: 4 }],
       },
       {
+        id: "cold-blooded-maneuver",
+        label: "Garder ton sang-froid pour manoeuvrer sans te devoiler",
+        requires: (state) => state.character.stats.coolness >= 70,
+        effects: [
+          { type: "stat", stat: "coolness", delta: 3 },
+          { type: "stat", stat: "authority", delta: 4 },
+          { type: "ambition", key: "influence", delta: 6 },
+        ],
+      },
+      {
         id: "resign",
         label: "Demissionner plutot que de cautionner la suite des evenements",
         effects: [

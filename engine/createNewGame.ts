@@ -115,6 +115,7 @@ export function createNewGame(params: NewGameParams): GameState {
     declaredGoal: null,
     careerLegacy: {},
     powerAccessionMode: null,
+    unlockedTraits: [],
   };
 
   return state;

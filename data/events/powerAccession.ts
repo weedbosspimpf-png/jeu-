@@ -69,6 +69,17 @@ export const powerAccessionEvents: GameEvent[] = [
           { type: "stat", stat: "influence", delta: 3 },
         ],
       },
+      {
+        id: "galvanize-crowd",
+        label: "Galvaniser une foule immense par ton seul charisme",
+        requires: (state) => state.character.stats.charisma >= 70,
+        effects: [
+          { type: "regionalPopularity", region: "capitale", delta: 10 },
+          { type: "regionalPopularity", region: "nord", delta: 6 },
+          { type: "regionalPopularity", region: "sud", delta: 6 },
+          { type: "stat", stat: "popularity", delta: 6 },
+        ],
+      },
     ],
   },
 
@@ -297,6 +308,16 @@ export const powerAccessionEvents: GameEvent[] = [
         effects: [{ type: "resolveCoupAttempt" }],
       },
       {
+        id: "assess-risk-then-attempt",
+        label: "Evaluer prudemment les rapports de force avant d'agir",
+        requires: (state) => state.character.stats.prudence >= 60,
+        effects: [
+          { type: "flag", flag: "coup-risk-assessed", value: true },
+          { type: "stat", stat: "prudence", delta: 2 },
+          { type: "resolveCoupAttempt" },
+        ],
+      },
+      {
         id: "renounce-coup",
         label: "Renoncer et rester loyal a l'ordre constitutionnel",
         effects: [
@@ -321,6 +342,7 @@ export const powerAccessionEvents: GameEvent[] = [
         effects: [
           { type: "flag", flag: "coup-result-pending", value: false },
           { type: "flag", flag: "coup-won", value: false },
+          { type: "flag", flag: "coup-risk-assessed", value: false },
           { type: "becomePresident", mode: "coup" },
           { type: "joinCareer", track: "politics", rankId: "president" },
           { type: "regimeShift", regime: "unstable" },
@@ -345,6 +367,7 @@ export const powerAccessionEvents: GameEvent[] = [
         effects: [
           { type: "flag", flag: "coup-result-pending", value: false },
           { type: "flag", flag: "coup-won", value: false },
+          { type: "flag", flag: "coup-risk-assessed", value: false },
           { type: "flag", flag: "arrested", value: true },
           { type: "stat", stat: "authority", delta: -30 },
           { type: "stat", stat: "influence", delta: -40 },
