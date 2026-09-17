@@ -86,6 +86,7 @@ export type Effect =
   | { type: "money"; delta: number }
   | { type: "relationship"; npcId: string; trust?: number; loyalty?: number; influence?: number }
   | { type: "relationshipStatus"; npcId: string; status: RelationshipState["status"] }
+  | { type: "relationshipInit"; npcId: string; name: string; role: string }
   | { type: "world"; key: WorldKey; delta: number }
   | { type: "flag"; flag: string; value: boolean }
   | { type: "careerPerformance"; delta: number }
@@ -152,4 +153,21 @@ export interface CareerTrack {
   label: string;
   description: string;
   ranks: CareerRank[];
+}
+
+export interface Ending {
+  id: string;
+  title: string;
+  category:
+    | "success"
+    | "failure"
+    | "retirement"
+    | "death"
+    | "power-loss"
+    | "legacy"
+    | "president";
+  /** Plus le nombre est eleve, plus cette fin est prioritaire si plusieurs correspondent. */
+  priority: number;
+  condition: (state: GameState) => boolean;
+  epilogue: (state: GameState) => string;
 }

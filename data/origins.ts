@@ -54,7 +54,7 @@ export const ORIGINS: Origin[] = [
       "Faute d'opportunites, tu te rapproches d'un reseau informel. Ce chemin fictif explore les consequences d'une vie hors-la-loi.",
     statModifiers: { courage: 8, loyalty: -5, integrity: -10, reputation: -10 },
     startingMoney: 150,
-    startingCareer: { track: "crime", rankId: "recrue" },
+    startingCareer: { track: "crime", rankId: "membre" },
     mentor: { npcId: "mentor", name: "Le Vieux", role: "Figure du reseau" },
   },
 ];

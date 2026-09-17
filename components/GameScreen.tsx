@@ -7,6 +7,7 @@ import { CareerPanel } from "./CareerPanel";
 import { RelationshipsPanel } from "./RelationshipsPanel";
 import { EventCard } from "./EventCard";
 import { HistoryLog } from "./HistoryLog";
+import { ComparisonPanel } from "./ComparisonPanel";
 import { useGameStore } from "@/store/useGameStore";
 
 interface GameScreenProps {
@@ -47,6 +48,7 @@ export function GameScreen({ state, currentEvent, log }: GameScreenProps) {
               </button>
             </section>
           )}
+          <ComparisonPanel state={state} />
           <HistoryLog log={log} />
         </div>
 

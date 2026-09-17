@@ -1,19 +1,22 @@
 "use client";
 
 import { create } from "zustand";
-import type { GameEvent, GameState } from "@/engine/types";
+import type { Ending, GameEvent, GameState } from "@/engine/types";
 import { createNewGame } from "@/engine/createNewGame";
 import { advanceTurn } from "@/engine/simulation";
 import { applyChoice, pickNextEvent } from "@/engine/events";
+import { checkEnding } from "@/engine/endings";
 import { saveGame, loadGame, clearSave, hasSave } from "@/engine/save";
 import { BASE_STATS } from "@/data/stats";
 import { getOrigin } from "@/data/origins";
 import { ALL_EVENTS } from "@/data/events";
 import { CAREER_TRACKS } from "@/data/careers";
+import { ENDINGS } from "@/data/endings";
 
 interface GameStore {
   state: GameState | null;
   currentEvent: GameEvent | null;
+  ending: Ending | null;
   log: string[];
   hasExistingSave: boolean;
   startNewGame: (name: string, originId: string) => void;
@@ -30,6 +33,7 @@ function cloneState(state: GameState): GameState {
 export const useGameStore = create<GameStore>((set, get) => ({
   state: null,
   currentEvent: null,
+  ending: null,
   log: [],
   hasExistingSave: hasSave(),
 
@@ -47,7 +51,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
     const firstEvent = pickNextEvent(newState, ALL_EVENTS);
     saveGame(newState);
-    set({ state: newState, currentEvent: firstEvent, log: [], hasExistingSave: true });
+    set({ state: newState, currentEvent: firstEvent, ending: null, log: [], hasExistingSave: true });
   },
 
   chooseOption: (choiceId) => {
@@ -55,11 +59,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!state || !currentEvent) return;
     const next = cloneState(state);
     const log = applyChoice(next, currentEvent, choiceId);
-    const followUpEvent = pickNextEvent(next, ALL_EVENTS.filter((e) => e.id !== currentEvent.id));
+    const ending = checkEnding(next, ENDINGS);
+    const followUpEvent = ending
+      ? null
+      : pickNextEvent(next, ALL_EVENTS.filter((e) => e.id !== currentEvent.id));
     saveGame(next);
     set((prev) => ({
       state: next,
       currentEvent: followUpEvent,
+      ending,
       log: [...log, ...prev.log].slice(0, 30),
     }));
   },
@@ -69,10 +77,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!state) return;
     const next = cloneState(state);
     const result = advanceTurn(next, { events: ALL_EVENTS, careerTracks: CAREER_TRACKS });
+    const ending = checkEnding(result.state, ENDINGS);
     saveGame(result.state);
     set((prev) => ({
       state: result.state,
-      currentEvent: result.nextEvent,
+      currentEvent: ending ? null : result.nextEvent,
+      ending,
       log: [...result.log, ...prev.log].slice(0, 30),
     }));
   },
@@ -80,12 +90,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   continueSavedGame: () => {
     const saved = loadGame();
     if (!saved) return;
-    const nextEvent = pickNextEvent(saved, ALL_EVENTS);
-    set({ state: saved, currentEvent: nextEvent, log: [], hasExistingSave: true });
+    const ending = checkEnding(saved, ENDINGS);
+    const nextEvent = ending ? null : pickNextEvent(saved, ALL_EVENTS);
+    set({ state: saved, currentEvent: nextEvent, ending, log: [], hasExistingSave: true });
   },
 
   resetGame: () => {
     clearSave();
-    set({ state: null, currentEvent: null, log: [], hasExistingSave: false });
+    set({ state: null, currentEvent: null, ending: null, log: [], hasExistingSave: false });
   },
 }));

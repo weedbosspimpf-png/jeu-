@@ -46,6 +46,21 @@ export function applyEffect(state: GameState, effect: Effect): void {
       rel.status = effect.status;
       break;
     }
+    case "relationshipInit": {
+      if (!state.relationships[effect.npcId]) {
+        state.relationships[effect.npcId] = {
+          npcId: effect.npcId,
+          name: effect.name,
+          role: effect.role,
+          trust: 40,
+          loyalty: 40,
+          influence: 15,
+          status: "superieur",
+          history: [],
+        };
+      }
+      break;
+    }
     case "world": {
       state.world.values[effect.key] = clamp(
         state.world.values[effect.key] + effect.delta,

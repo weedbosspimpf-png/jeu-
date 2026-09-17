@@ -3,6 +3,7 @@ export * from "./effects";
 export * from "./world";
 export * from "./careers";
 export * from "./events";
+export * from "./endings";
 export * from "./simulation";
 export * from "./save";
 export * from "./createNewGame";
