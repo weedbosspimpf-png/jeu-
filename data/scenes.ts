@@ -41,6 +41,21 @@ export interface SceneDescriptor {
   figures: number;
   formation: SceneFormation;
   caption: string;
+  /** Purement indicatif (organisation/lecture) : quelle phase de mission cette scene illustre. */
+  missionPhase?: "briefing" | "action" | "resolution";
+  /** Grade du joueur au moment de cette scene, si pertinent pour la coherence visuelle du personnage. */
+  rank?: string;
+  /** Ambiance dominante (ex: "tendu", "solennel", "cordial") : reservee a un usage futur (choix de musique/filtre...). */
+  mood?: string;
+  /**
+   * Chemin vers une vraie illustration statique (sous /public), ex:
+   * "/scenes/army/kambara-briefing.jpg". Quand absent, SceneIllustration
+   * retombe sur la scene procedurale en SVG (voir ce fichier) : l'absence
+   * d'artwork n'est jamais une erreur, juste un contenu pas encore produit.
+   */
+  artwork?: string;
+  /** Texte alternatif de l'image reelle (accessibilite). Si absent, `caption` sert de repli. */
+  alt?: string;
 }
 
 export const SCENES: Record<string, SceneDescriptor> = {
@@ -53,6 +68,10 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 3,
     formation: "group",
     caption: "Ton unite attend tes ordres devant la carte de la zone.",
+    missionPhase: "briefing",
+    mood: "tendu",
+    artwork: "/scenes/army/kambara-briefing.svg",
+    alt: "Officier face a son unite devant une carte, dans une salle de briefing avant l'aube.",
   },
   "army-kambara-field": {
     label: "Zone d'operation",
@@ -63,6 +82,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 2,
     formation: "group",
     caption: "L'operation est engagee sur le terrain, hors de toute route goudronnee.",
+    missionPhase: "action",
+    mood: "tendu",
   },
   "army-kambara-debrief": {
     label: "Debriefing",
@@ -73,6 +94,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 2,
     formation: "facing",
     caption: "Le bilan de l'operation remonte a la hierarchie.",
+    missionPhase: "resolution",
+    mood: "solennel",
   },
   "police-disparition-briefing": {
     label: "Scene a investiguer",
@@ -83,6 +106,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 2,
     formation: "facing",
     caption: "Tu arrives sur les lieux ou la personne disparue a ete vue pour la derniere fois.",
+    missionPhase: "briefing",
+    mood: "tendu",
   },
   "police-disparition-resolution": {
     label: "Bureau des enqueteurs",
@@ -93,6 +118,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 1,
     formation: "solo",
     caption: "Tu rediges tes conclusions avant de les transmettre.",
+    missionPhase: "resolution",
+    mood: "calme",
   },
   "entrepreneur-contrat-briefing": {
     label: "Table de negociation",
@@ -103,6 +130,10 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 2,
     formation: "facing",
     caption: "Le client attend ta position sur les termes du contrat.",
+    missionPhase: "briefing",
+    mood: "cordial",
+    artwork: "/scenes/entrepreneur/contrat-briefing.svg",
+    alt: "Deux hommes d'affaires assis face a face autour d'une table de negociation, bureau moderne.",
   },
   "entrepreneur-contrat-resolution": {
     label: "Signature",
@@ -113,6 +144,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 2,
     formation: "facing",
     caption: "Les termes sont arretes, il ne reste qu'a signer.",
+    missionPhase: "resolution",
+    mood: "cordial",
   },
   "politics-mobilisation-briefing": {
     label: "Place publique",
@@ -123,6 +156,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 6,
     formation: "crowd",
     caption: "Une foule s'est reunie, en attente de ce que tu vas leur dire.",
+    missionPhase: "briefing",
+    mood: "electrique",
   },
   "politics-mobilisation-resolution": {
     label: "Apres le rassemblement",
@@ -133,6 +168,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 3,
     formation: "group",
     caption: "Le mouvement que tu as lance commence a prendre forme.",
+    missionPhase: "resolution",
+    mood: "espoir",
   },
   "presidency-budget-briefing": {
     label: "Conseil des ministres",
@@ -143,6 +180,8 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 4,
     formation: "group",
     caption: "Le conseil attend ton arbitrage sur une enveloppe budgetaire limitee.",
+    missionPhase: "briefing",
+    mood: "solennel",
   },
   "presidency-budget-resolution": {
     label: "Annonce officielle",
@@ -153,5 +192,7 @@ export const SCENES: Record<string, SceneDescriptor> = {
     figures: 3,
     formation: "facing",
     caption: "La decision budgetaire est rendue publique.",
+    missionPhase: "resolution",
+    mood: "solennel",
   },
 };

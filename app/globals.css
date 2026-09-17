@@ -301,10 +301,13 @@ h3 {
   border-bottom: 1px solid var(--accent-gold);
 }
 
-.scene-illustration svg {
+.scene-illustration svg,
+.scene-illustration img {
   display: block;
   width: 100%;
-  aspect-ratio: 400 / 160;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #100c0a;
 }
 
 .scene-illustration figcaption {

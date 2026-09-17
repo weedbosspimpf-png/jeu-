@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { SCENES, type SceneBackdrop, type SceneCareerAccent, type SceneFormation } from "@/data/scenes";
 
 interface SceneIllustrationProps {
@@ -5,12 +8,17 @@ interface SceneIllustrationProps {
 }
 
 /**
- * Systeme de scenes visuelles de mission : une illustration cinematique
- * generee proceduralement (SVG) a partir des parametres purement
- * descriptifs de data/scenes.ts (lieu, decor, carriere, nombre de
- * personnages). Pas d'image bitmap statique : ceci garantit une identite
- * visuelle unifiee (memes lumieres, memes silhouettes, meme cadrage) sur
- * toutes les scenes, sans dependre d'un pipeline d'assets externe.
+ * Systeme de scenes visuelles de mission :
+ *
+ *   scene -> artwork reel (data/scenes.ts::artwork, fichier sous /public) ?
+ *              oui -> <img>, et si le fichier echoue a charger -> repli automatique
+ *              non  -> scene procedurale en SVG (ProceduralScene ci-dessous)
+ *
+ * Le fallback SVG garantit que l'interface n'est jamais cassee, meme sans
+ * illustration reelle produite pour une scene donnee. Ajouter un vrai
+ * artwork plus tard = deposer un fichier sous public/scenes/<filiere>/... et
+ * renseigner `artwork` (+ `alt`) dans data/scenes.ts : aucun changement ici
+ * ni dans EventCard.tsx.
  *
  * Personnages representes en silhouettes a peau brune (identite du jeu :
  * personnages noirs, Afrique de l'Ouest fictive), tenue coloree selon la
@@ -173,10 +181,13 @@ function Backdrop({ backdrop }: { backdrop: SceneBackdrop }) {
   }
 }
 
-export function SceneIllustration({ sceneKey }: SceneIllustrationProps) {
-  const scene = SCENES[sceneKey];
-  if (!scene) return null;
-
+function ProceduralScene({
+  sceneKey,
+  scene,
+}: {
+  sceneKey: string;
+  scene: (typeof SCENES)[string];
+}) {
   const [skyTop, skyBottom] = TIME_SKY[scene.time]!;
   const colors = CAREER_COLORS[scene.career];
   const positions = figurePositions(scene.formation, scene.figures);
@@ -184,25 +195,47 @@ export function SceneIllustration({ sceneKey }: SceneIllustrationProps) {
   const vignetteId = `vignette-${sceneKey}`;
 
   return (
+    <svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" role="img" aria-label={scene.caption}>
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={skyTop} />
+          <stop offset="100%" stopColor={skyBottom} />
+        </linearGradient>
+        <radialGradient id={vignetteId} cx="50%" cy="45%" r="75%">
+          <stop offset="55%" stopColor="#000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="400" height="160" fill={`url(#${gradientId})`} />
+      <Backdrop backdrop={scene.backdrop} />
+      {positions.map((p, i) => (
+        <Figure key={i} x={p.x} y={p.y} scale={p.scale} garment={colors.garment} accent={colors.accent} />
+      ))}
+      <rect x="0" y="0" width="400" height="160" fill={`url(#${vignetteId})`} />
+    </svg>
+  );
+}
+
+export function SceneIllustration({ sceneKey }: SceneIllustrationProps) {
+  const scene = SCENES[sceneKey];
+  const [artworkFailed, setArtworkFailed] = useState(false);
+  if (!scene) return null;
+
+  const useArtwork = Boolean(scene.artwork) && !artworkFailed;
+
+  return (
     <figure className="scene-illustration">
-      <svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" role="img" aria-label={scene.caption}>
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={skyTop} />
-            <stop offset="100%" stopColor={skyBottom} />
-          </linearGradient>
-          <radialGradient id={vignetteId} cx="50%" cy="45%" r="75%">
-            <stop offset="55%" stopColor="#000" stopOpacity="0" />
-            <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
-          </radialGradient>
-        </defs>
-        <rect x="0" y="0" width="400" height="160" fill={`url(#${gradientId})`} />
-        <Backdrop backdrop={scene.backdrop} />
-        {positions.map((p, i) => (
-          <Figure key={i} x={p.x} y={p.y} scale={p.scale} garment={colors.garment} accent={colors.accent} />
-        ))}
-        <rect x="0" y="0" width="400" height="160" fill={`url(#${vignetteId})`} />
-      </svg>
+      {useArtwork ? (
+        // eslint-disable-next-line @next/next/no-img-element -- image locale, dimensions variables selon l'artwork produit plus tard
+        <img
+          src={scene.artwork}
+          alt={scene.alt ?? scene.caption}
+          loading="lazy"
+          onError={() => setArtworkFailed(true)}
+        />
+      ) : (
+        <ProceduralScene sceneKey={sceneKey} scene={scene} />
+      )}
       <figcaption>
         <span className="scene-location">
           {scene.location} &middot; {scene.time}

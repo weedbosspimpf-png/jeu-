@@ -396,38 +396,43 @@ importante peut afficher une scene visuelle cohérente avec la carriere,
 le grade, le lieu et la situation reelle - jamais une image decorative
 generique.
 
+- **`GameEvent.scene?: string`** (`engine/types.ts`) : juste une cle,
+  comme `mission.id`. L'engine ne sait rien dessiner ; seul le registre
+  cote presentation interprete cette cle. Independant de `mission` (une
+  etape non-mission pourrait aussi en avoir une).
+- **`data/scenes.ts`** (presentation pure) : `SCENES: Record<string,
+  SceneDescriptor>`. Chaque entree decrit une situation reelle du jeu
+  (lieu, moment de la journee, decor, filiere, grade `rank?`, phase de
+  mission `missionPhase?`, ambiance `mood?`, nombre de personnages et
+  disposition, legende) - jamais une scene inventee sans rapport avec
+  l'evenement.
+- **Deux couches de rendu, avec repli automatique** (`components/SceneIllustration.tsx`) :
+  1. Si `scene.artwork` (chemin sous `/public/scenes/...`) est defini,
+     affiche une vraie image (`<img>`). Une erreur de chargement
+     (`onError`) bascule automatiquement sur la scene procedurale : le
+     jeu ne peut jamais afficher une image cassee.
+  2. Sinon (ou en cas d'echec), scene procedurale generee en SVG
+     (silhouettes a peau brune, decor selon `backdrop`, tenue par
+     filiere, cadre cinematique commun) - c'est le filet de securite
+     permanent, pas juste un etat transitoire en attendant les vraies
+     images.
 - **Limite honnete assumee** : cette session n'a acces a aucun outil de
   generation d'image photorealiste (pas de DALL-E/Imagen/Stable
-  Diffusion disponible). Le systeme livre est donc une illustration
-  **stylisee generee proceduralement en SVG** (silhouettes figuratives,
-  decor simplifie), pas un rendu photo cinematique. L'architecture est
-  concue pour qu'on puisse remplacer ce moteur SVG par de vraies images
-  (illustrations commandees, rendus IA externes...) plus tard sans
-  toucher au moteur ni a `EventCard.tsx` : seule la fonction de rendu
-  dans `SceneIllustration.tsx` changerait.
-- **`GameEvent.scene?: string`** (nouveau champ optionnel dans
-  `engine/types.ts`) : juste une cle, comme `mission.id`. L'engine ne
-  sait rien dessiner ; seul le registre cote presentation interprete
-  cette cle. Independant de `mission` (une etape non-mission pourrait
-  aussi en avoir une).
-- **`data/scenes.ts`** (nouveau, presentation pure) : `SCENES: Record<string,
-  SceneDescriptor>` avec pour chaque cle un lieu, un moment de la
-  journee, un decor (`briefing-room`, `rural-field`, `checkpoint`,
-  `crime-scene`, `office`, `signing-room`, `rally-square`,
-  `council-chamber`), la filiere (pour la couleur de tenue), le nombre
-  de personnages et leur disposition, et la legende affichee. Chaque
-  entree decrit une situation reelle du jeu (ex: `army-kambara-field` =
-  la phase "action" de l'operation Kambara), jamais une scene inventee
-  sans rapport.
-- **`components/SceneIllustration.tsx`** : moteur de rendu SVG
-  parametrique (pas d'images bitmap statiques a maintenir). Palette de
-  ciel selon le moment de la journee, decor selon `backdrop`,
-  personnages en silhouettes a peau brune (identite du jeu : personnages
-  noirs) habilles d'une couleur par filiere (kaki armee, bleu marine
-  police/gendarmerie, costume sombre entrepreneur, rouge/or politique,
-  marine/or presidence), cadre cinematique commun (vignette, bandeau de
-  legende dore) pour une identite visuelle unifiee entre toutes les
-  scenes.
+  Diffusion). Deux scenes portent un `artwork` reel a titre de
+  demonstration du mecanisme (`army-kambara-briefing`,
+  `entrepreneur-contrat-briefing`), mais ce sont des **placeholders
+  visuellement marques "PLACEHOLDER"** (fichiers SVG statiques sous
+  `public/scenes/`), pas des illustrations finales. Toutes les autres
+  scenes utilisent le repli procedural. Remplacer un placeholder par une
+  vraie illustration = deposer le fichier final au meme chemin sous
+  `public/scenes/<filiere>/...` (jpg/png/svg) et ajuster `alt` si besoin
+  dans `data/scenes.ts` - aucun changement de code.
+- **Cadrage** : `.scene-illustration img/svg` (`app/globals.css`) impose
+  un ratio 16:9 fixe et `object-fit: cover`, pour que la scene reste une
+  grande illustration immersive (pas une miniature), coherente que ce
+  soit une vraie image ou le repli SVG, y compris sur mobile (verifie en
+  emulation iPhone 13 : aucun debordement horizontal, image pleine
+  largeur).
 - **Integration** : `EventCard.tsx` affiche `<SceneIllustration>` en tete
   de la carte quand `event.scene` est defini, au-dessus du texte, de
   l'objectif de mission et des choix - jamais a la place. Scene +
@@ -441,6 +446,12 @@ generique.
   `presidency-budget-briefing/resolution`. Etendre a une nouvelle
   mission = ajouter une entree dans `data/scenes.ts` + le champ `scene`
   sur l'evenement concerne, jamais modifier le moteur de rendu.
+- **Bibliotheque prevue pour grandir** (pas encore peuplee au-dela des
+  2 placeholders) : `public/scenes/{army,police,gendarmerie,crime,
+  entrepreneur,politics,presidency}/...`, une scene pouvant deja etre
+  reutilisee par plusieurs missions puisque `scene` n'est qu'une cle
+  partageable, et une meme mission pouvant avoir un `artwork` different
+  par phase (`missionPhase`).
 
 ### Systeme de missions
 Une "mission" n'est jamais un second moteur : c'est une chaine de
@@ -784,11 +795,14 @@ Pas encore fait / limites connues :
 - Les portraits de personnage restent un avatar-initiales stylise : pas
   d'illustration ni de portrait genere (aucun pipeline d'asset graphique
   disponible dans cette session).
-- Les scenes de mission (`SceneIllustration.tsx`) sont des illustrations
-  stylisees generees en SVG, pas des rendus photorealistes : aucun outil
-  de generation d'image IA n'est disponible dans cette session. Seules
-  5 filieres representatives (11 scenes) sont couvertes pour l'instant ;
-  etoffer les autres missions existantes reste a faire.
+- Les scenes de mission (`SceneIllustration.tsx`) savent afficher une
+  vraie image (`scene.artwork`) avec repli automatique vers un rendu SVG
+  procedural, mais aucun outil de generation d'image photorealiste n'est
+  disponible dans cette session : seules 2 scenes (sur 11) portent un
+  `artwork`, et ce sont des placeholders explicitement marques comme
+  tels (fichiers SVG statiques a remplacer), pas des illustrations
+  finales. Etoffer la bibliotheque `public/scenes/` avec de vraies
+  illustrations reste a faire.
 - L'interconnexion entre filieres reste basee sur des flags/relations
   ponctuels (ex: `former-criminal-entrepreneur`, `minister-joined-opposition`)
   plutot que sur une generation generique de rencontres entre PNJ de
