@@ -10,6 +10,7 @@ import { HistoryLog } from "./HistoryLog";
 import { ComparisonPanel } from "./ComparisonPanel";
 import { AmbitionPanel } from "./AmbitionPanel";
 import { PersonalityPanel } from "./PersonalityPanel";
+import { ReputationPanel } from "./ReputationPanel";
 import { useGameStore } from "@/store/useGameStore";
 
 interface GameScreenProps {
@@ -36,6 +37,7 @@ export function GameScreen({ state, currentEvent, log }: GameScreenProps) {
         <div className="column">
           <CharacterSheet state={state} />
           <CareerPanel state={state} />
+          <ReputationPanel state={state} />
           <AmbitionPanel state={state} />
           <PersonalityPanel state={state} />
         </div>

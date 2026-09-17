@@ -1,6 +1,7 @@
 import type { Effect, GameState, PowerAccessionMode, RelationshipState } from "./types";
 import { clamp, clampStat } from "./utils";
 import { resolvePowerBid } from "./powerBids";
+import { computeSocialActionOutcome } from "./socialActions";
 
 function ensureRelationship(state: GameState, npcId: string): RelationshipState {
   const existing = state.relationships[npcId];
@@ -115,6 +116,7 @@ export function applyEffect(state: GameState, effect: Effect): void {
           reputationAtExit: state.character.stats.reputation,
           influenceAtExit: state.character.stats.influence,
           exitTurn: state.turn,
+          exitReason: effect.reason,
         };
       }
       state.career.currentTrack = effect.track;
@@ -200,6 +202,14 @@ export function applyEffect(state: GameState, effect: Effect): void {
       state.character.stats.reputation = clampStat(
         state.character.stats.reputation + reputationDeltaByMode[effect.mode]
       );
+      break;
+    }
+    case "resolveSocialAction": {
+      state.character.money = Math.round(state.character.money - effect.cost);
+      const outcome = computeSocialActionOutcome(state, effect.scale);
+      state.character.stats.reputation = clampStat(state.character.stats.reputation + outcome.reputationDelta);
+      state.character.stats.popularity = clampStat(state.character.stats.popularity + outcome.popularityDelta);
+      state.character.stats.publicTrust = clampStat(state.character.stats.publicTrust + outcome.publicTrustDelta);
       break;
     }
     default: {

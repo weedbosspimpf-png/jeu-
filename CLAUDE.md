@@ -284,6 +284,41 @@ en soi.
 - **Affichage** : `components/PersonalityPanel.tsx` (profil emergent +
   particularites developpees).
 
+### Jauges, avertissements, sanctions et actions sociales
+Le joueur doit toujours comprendre ou il en est, ce qui le menace, et
+qu'un echec de carriere ouvre de nouvelles possibilites plutot que de
+finir la partie.
+
+- **Jauge d'objectif enrichie** : `data/ambitions.ts::computeGoalProgress`
+  combine desormais rang atteint, performance, reputation/influence,
+  soutiens (relations allie/partenaire) et ambition dominante — jamais
+  une simple addition d'un seul facteur.
+- **Jauges de risque par filiere** (`data/careerRisk.ts`, presentation
+  pure, aucun nouvel etat stocke) : risque disciplinaire/de revocation
+  pour armee/police/gendarmerie, risque financier pour l'entrepreneuriat,
+  risque judiciaire pour le reseau fictif, risque de perte de popularite
+  pour la politique. `computeLegitimacy` y vit aussi : distincte de la
+  reputation, de la popularite et de l'influence (le trait du president
+  si le joueur l'est, sinon une coherence integrite/reputation).
+- **Chaine d'escalade disciplinaire** (`data/events/careerDiscipline.ts`,
+  commune a armee/police/gendarmerie) : avertissement -> sanction ->
+  revocation, jamais direct. La revocation propose explicitement les
+  nouvelles trajectoires ouvertes par le passe du personnage (civil,
+  entrepreneuriat via richesse, politique via influence), jamais un
+  "GAME OVER". Le motif de depart est desormais conserve dans le passe :
+  `CareerLegacyEntry.exitReason`, rempli via le nouveau champ optionnel
+  `reason` de l'effet `joinCareer`.
+- **Actions sociales contextuelles** (`data/events/socialActions.ts` +
+  `engine/socialActions.ts` + effet `resolveSocialAction`) : jamais un
+  bouton "don -> +10 popularite". Le moteur calcule une perception de
+  sincerite (integrite/empathie contre cupidite/opportunisme + hasard) :
+  une action sincere et bien percue amplifie l'effet, une action jugee
+  interessee le dilue, et dans le pire cas peut se retourner contre le
+  personnage.
+- **Affichage** : `components/ReputationPanel.tsx` (popularite,
+  reputation, influence, legitimite cote a cote + jauges de risque de la
+  filiere actuelle, avec avertissement visuel si un risque est eleve).
+
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
 carrieres / personnages / relations / economie / politique / interface
@@ -308,6 +343,9 @@ engine/     moteur pur TypeScript, aucune dependance UI, entierement testable
   powerBids.ts        calcul abstrait (jamais operationnel) de la reussite d'une
                       tentative d'acceder au pouvoir : election (avec rivaux
                       fictifs generes a la volee), transition de crise, coup
+  socialActions.ts    calcule l'effet reel (jamais garanti) d'une action sociale,
+                      selon la sincerite percue (integrite/empathie vs
+                      cupidite/opportunisme + hasard)
   createNewGame.ts   assemble un GameState initial a partir des donnees d'origine
   save.ts            serialisation localStorage (GameState est 100% JSON-serialisable,
                       AUCUNE fonction n'est jamais stockee dans le state)
@@ -325,6 +363,9 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
                            voir PersonalityPanel.tsx
   personalityTraits.ts     registre des particularites debloquables (PersonalityTrait[]),
                            chacune une combinaison de plusieurs stats comportementales
+  careerRisk.ts            logique de presentation pure : jauges de risque par
+                           filiere + legitimite (distincte de reputation/popularite/
+                           influence) - voir ReputationPanel.tsx
   endings.ts               liste des fins de partie (Ending[])
   careers/                 un fichier par filiere (civil, army, police, gendarmerie,
                             entrepreneur, crime, politics), + index.ts qui les agrege ;
@@ -373,6 +414,12 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
                                reelection ou succession volontaire
     personalityMoments.ts      evenements qui n'existent que grace a une stat
                                comportementale assez haute (ex: perspicacite)
+    careerDiscipline.ts        chaine avertissement -> sanction -> revocation
+                               commune a armee/police/gendarmerie ; la revocation
+                               propose les trajectoires ouvertes, jamais un
+                               "GAME OVER"
+    socialActions.ts           dons, fondations, soutien - couteux, a effet
+                               contextuel (jamais un bouton "+10 popularite")
     memory.ts                  evenements de rappel (systeme de memoire)
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
@@ -470,6 +517,13 @@ Fait :
   archetype de personnalite recalcule sans jamais figer de classe : voir
   la section "Personnalite, malice, ruse et capacites sociales" plus
   haut. Affiche dans `PersonalityPanel.tsx`.
+- Jauges de risque par filiere, chaine d'escalade disciplinaire
+  (avertissement -> sanction -> revocation, jamais un game over) pour
+  armee/police/gendarmerie qui propose directement les trajectoires
+  ouvertes par le passe, legitimite distincte de reputation/popularite/
+  influence, et actions sociales a effet contextuel (jamais un bouton
+  automatique) : voir la section "Jauges, avertissements, sanctions et
+  actions sociales" plus haut. Affiche dans `ReputationPanel.tsx`.
 - Build Next.js et typecheck TypeScript verifies fonctionnels.
 
 Pas encore fait / limites connues :

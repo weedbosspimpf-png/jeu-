@@ -79,7 +79,13 @@ export function describeCurrentAmbition(state: GameState): string {
   return `Je veux ${AMBITION_PHRASES[dominant]}.`;
 }
 
-/** Progression indicative (0-100) vers le sommet de la filiere actuelle. */
+/**
+ * Progression indicative (0-100) vers le sommet de la filiere actuelle.
+ * Une estimation, jamais une garantie : combine le rang atteint, la
+ * performance dans le poste, la reputation/influence deja construites,
+ * les soutiens (relations allie/partenaire) et l'ambition dominante du
+ * personnage - pas une simple addition automatique d'un seul facteur.
+ */
 export function computeGoalProgress(state: GameState): number {
   const current = getCurrentRank(state, CAREER_TRACKS);
   if (!current) return 0;
@@ -88,10 +94,21 @@ export function computeGoalProgress(state: GameState): number {
   if (!track) return 0;
 
   const idx = track.ranks.findIndex((r) => r.id === current.rank.id);
-  const rankProgress = track.ranks.length > 1 ? (idx / (track.ranks.length - 1)) * 75 : 0;
-  const performanceBonus = (state.career.performance / 100) * 25;
+  const rankProgress = track.ranks.length > 1 ? (idx / (track.ranks.length - 1)) * 45 : 0;
+  const performanceBonus = (state.career.performance / 100) * 15;
+  const reputationInfluence =
+    ((state.character.stats.reputation + state.character.stats.influence) / 200) * 20;
+  const allies = Object.values(state.relationships).filter(
+    (r) => r.status === "allie" || r.status === "partenaire"
+  ).length;
+  const alliesBonus = Math.min(allies, 5) * 2;
+  const ambitionBonus = (state.ambitions[getDominantAmbition(state)] / 100) * 10;
 
-  return clamp(Math.round(rankProgress + performanceBonus), 0, 100);
+  return clamp(
+    Math.round(rankProgress + performanceBonus + reputationInfluence + alliesBonus + ambitionBonus),
+    0,
+    100
+  );
 }
 
 /**

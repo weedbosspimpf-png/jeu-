@@ -171,7 +171,12 @@ export interface CareerLegacyEntry {
   reputationAtExit: number;
   influenceAtExit: number;
   exitTurn: number;
+  /** Ex: "Sanction disciplinaire", "Faillite", "Defaite electorale". Absent = depart volontaire ordinaire. */
+  exitReason?: string;
 }
+
+/** Ampleur d'une action sociale (voir engine/socialActions.ts) : determine le cout et le potentiel d'effet. */
+export type SocialActionScale = "small" | "medium" | "large";
 
 /** Effet declaratif applicable a un etat de jeu : entierement serialisable. */
 export type Effect =
@@ -183,7 +188,7 @@ export type Effect =
   | { type: "world"; key: WorldKey; delta: number }
   | { type: "flag"; flag: string; value: boolean }
   | { type: "careerPerformance"; delta: number }
-  | { type: "joinCareer"; track: CareerTrackId; rankId: string }
+  | { type: "joinCareer"; track: CareerTrackId; rankId: string; reason?: string }
   | { type: "presidentTrait"; trait: PresidentTraitKey; delta: number }
   | { type: "regimeShift"; regime: RegimeType }
   | { type: "relationshipSyncPresident" }
@@ -193,7 +198,8 @@ export type Effect =
   | { type: "resolvePresidentialElection" }
   | { type: "resolveCrisisTransition" }
   | { type: "resolveCoupAttempt" }
-  | { type: "becomePresident"; mode: PowerAccessionMode };
+  | { type: "becomePresident"; mode: PowerAccessionMode }
+  | { type: "resolveSocialAction"; cost: number; scale: SocialActionScale };
 
 export interface PendingEffect {
   id: string;
