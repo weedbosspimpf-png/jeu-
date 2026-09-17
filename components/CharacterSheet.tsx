@@ -1,19 +1,25 @@
 import type { GameState } from "@/engine/types";
-import { STAT_LABELS } from "@/data/stats";
-import { StatBar } from "./StatBar";
+import { CAREER_TRACKS } from "@/data/careers";
+import { getCurrentRank } from "@/engine/careers";
 
 export function CharacterSheet({ state }: { state: GameState }) {
+  const current = getCurrentRank(state, CAREER_TRACKS);
+  const legacyEntries = Object.entries(state.careerLegacy);
+
   return (
     <section className="panel">
       <h2>{state.character.name}</h2>
       <p className="muted">
         {state.character.age} ans &middot; {state.character.money.toLocaleString("fr-FR")} credits
       </p>
-      <div className="stat-grid">
-        {(Object.keys(STAT_LABELS) as (keyof typeof STAT_LABELS)[]).map((key) => (
-          <StatBar key={key} label={STAT_LABELS[key]} value={state.character.stats[key]} />
-        ))}
-      </div>
+      <p className="muted small">
+        {current ? `${current.rank.title} · ${current.track.label}` : "Sans trajectoire engagee"}
+      </p>
+      {legacyEntries.length > 0 && (
+        <p className="muted small">
+          Ancien parcours : {legacyEntries.map(([trackId]) => trackId).join(", ")}
+        </p>
+      )}
     </section>
   );
 }

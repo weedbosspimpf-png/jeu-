@@ -111,6 +111,77 @@ export function computeGoalProgress(state: GameState): number {
   );
 }
 
+export interface GoalProgressFactors {
+  positive: string[];
+  negative: string[];
+}
+
+/**
+ * Facteurs indicatifs qui rapprochent ou eloignent le personnage de son
+ * objectif - deduits des memes signaux que computeGoalProgress, jamais
+ * une garantie de reussite.
+ */
+export function computeGoalProgressFactors(state: GameState): GoalProgressFactors {
+  const positive: string[] = [];
+  const negative: string[] = [];
+  const stats = state.character.stats;
+
+  if (stats.reputation >= 55) positive.push("Reputation");
+  else if (stats.reputation < 35) negative.push("Reputation encore fragile");
+
+  if (stats.influence >= 55) positive.push("Influence");
+  else if (stats.influence < 30) negative.push("Influence limitee");
+
+  if (stats.popularity >= 55) positive.push("Popularite");
+
+  const allies = Object.values(state.relationships).filter(
+    (r) => r.status === "allie" || r.status === "partenaire"
+  ).length;
+  if (allies >= 3) positive.push("Soutiens nombreux");
+  else if (allies === 0) negative.push("Peu de soutiens");
+
+  if (state.career.turnsInRank >= 3) positive.push("Experience dans le poste actuel");
+
+  if (state.career.currentRankId === "president" && state.world.president.traits.legitimacy < 40) {
+    negative.push("Faible legitimite");
+  }
+
+  if (state.character.money < 500 && state.finances.savings < 500) {
+    negative.push("Ressources financieres limitees");
+  }
+
+  if (positive.length === 0) positive.push("Ambition personnelle");
+  if (negative.length === 0) negative.push("Aucun obstacle majeur identifie");
+
+  return { positive, negative };
+}
+
+export interface LockedTransition {
+  label: string;
+  reason: string;
+}
+
+/**
+ * Trajectoires visibles mais pas encore accessibles, avec la condition
+ * reelle du moteur (jamais une condition inventee) qui les debloquerait.
+ */
+export function listLockedTransitions(state: GameState): LockedTransition[] {
+  const locked: LockedTransition[] = [];
+  const track = state.career.currentTrack;
+
+  if (track !== "politics" && state.character.stats.influence < 30) {
+    locked.push({ label: "Entrer en politique", reason: `Influence insuffisante (${state.character.stats.influence}/30)` });
+  }
+  if (track === "entrepreneur" && state.career.currentRankId === "independant" && state.character.money < 3000) {
+    locked.push({
+      label: "Devenir chef d'entreprise",
+      reason: `Capital insuffisant (${state.character.money.toLocaleString("fr-FR")}/3 000 credits)`,
+    });
+  }
+
+  return locked;
+}
+
 /**
  * Suggestions indicatives de trajectoires ouvertes par l'etat actuel.
  * Ce ne sont pas les conditions exactes des evenements du moteur : juste

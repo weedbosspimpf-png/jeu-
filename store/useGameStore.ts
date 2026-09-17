@@ -14,6 +14,7 @@ import { ALL_EVENTS } from "@/data/events";
 import { CAREER_TRACKS } from "@/data/careers";
 import { ENDINGS } from "@/data/endings";
 import { PERSONALITY_TRAITS } from "@/data/personalityTraits";
+import { describeEffectDeltas } from "@/data/effectsSummary";
 
 function describeNewTraits(traits: ReturnType<typeof checkNewTraits>): string[] {
   return traits.map((trait) => `${trait.icon} Particularite developpee : ${trait.label}`);
@@ -24,6 +25,8 @@ interface GameStore {
   currentEvent: GameEvent | null;
   ending: Ending | null;
   log: string[];
+  /** Effets visibles du dernier choix pris, pour l'ecran "consequences" - jamais les effets caches. */
+  lastConsequences: string[];
   hasExistingSave: boolean;
   startNewGame: (name: string, originId: string) => void;
   chooseOption: (choiceId: string) => void;
@@ -41,6 +44,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   currentEvent: null,
   ending: null,
   log: [],
+  lastConsequences: [],
   hasExistingSave: hasSave(),
 
   startNewGame: (name, originId) => {
@@ -57,7 +61,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
     const firstEvent = pickNextEvent(newState, ALL_EVENTS);
     saveGame(newState);
-    set({ state: newState, currentEvent: firstEvent, ending: null, log: [], hasExistingSave: true });
+    set({
+      state: newState,
+      currentEvent: firstEvent,
+      ending: null,
+      log: [],
+      lastConsequences: [],
+      hasExistingSave: true,
+    });
   },
 
   chooseOption: (choiceId) => {
@@ -65,6 +76,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!state || !currentEvent) return;
     const next = cloneState(state);
     const log = applyChoice(next, currentEvent, choiceId);
+    const chosenChoice = currentEvent.choices.find((c) => c.id === choiceId);
+    const consequences = chosenChoice ? describeEffectDeltas(chosenChoice.effects) : [];
     const newTraits = checkNewTraits(next, PERSONALITY_TRAITS);
     const ending = checkEnding(next, ENDINGS);
     const followUpEvent = ending
@@ -75,6 +88,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state: next,
       currentEvent: followUpEvent,
       ending,
+      lastConsequences: consequences,
       log: [...describeNewTraits(newTraits), ...log, ...prev.log].slice(0, 30),
     }));
   },
@@ -91,6 +105,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state: result.state,
       currentEvent: ending ? null : result.nextEvent,
       ending,
+      lastConsequences: [],
       log: [...describeNewTraits(newTraits), ...result.log, ...prev.log].slice(0, 30),
     }));
   },
@@ -100,11 +115,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!saved) return;
     const ending = checkEnding(saved, ENDINGS);
     const nextEvent = ending ? null : pickNextEvent(saved, ALL_EVENTS);
-    set({ state: saved, currentEvent: nextEvent, ending, log: [], hasExistingSave: true });
+    set({ state: saved, currentEvent: nextEvent, ending, log: [], lastConsequences: [], hasExistingSave: true });
   },
 
   resetGame: () => {
     clearSave();
-    set({ state: null, currentEvent: null, ending: null, log: [], hasExistingSave: false });
+    set({ state: null, currentEvent: null, ending: null, log: [], lastConsequences: [], hasExistingSave: false });
   },
 }));

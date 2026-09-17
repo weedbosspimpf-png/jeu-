@@ -390,6 +390,82 @@ statistiques : elle doit changer la nature des problemes rencontres.
   `PresidentTraitKey.militarySupport`), dans
   `data/events/leadershipManagement.ts`.
 
+### Systeme de missions
+Une "mission" n'est jamais un second moteur : c'est une chaine de
+`GameEvent` existants (memes effets, memes flags, meme moteur
+`engine/events.ts`), habillee de metadonnees purement descriptives pour
+un affichage immersif. Exactement le meme mecanisme que les epreuves
+militaires ou la chaine `crimeMissions.ts` deja presentes, formalise et
+etendu a toutes les filieres.
+
+- **`GameEvent.mission?: MissionMeta`** (nouveau champ optionnel dans
+  `engine/types.ts`) : `{ id, title, objective, difficulty, phase:
+  "briefing"|"action"|"resolution", rewardsPreview?, risksPreview? }`.
+  Aucun nouvel etat, aucun nouvel effet requis : la progression entre
+  phases utilise les flags existants (`state.flags`), exactement comme
+  `armyTraining.ts` le fait deja pour ses epreuves.
+- **`data/events/missions/`** (nouveau dossier, un fichier par filiere +
+  `index.ts` qui agrege dans `MISSION_EVENTS`, inclus dans
+  `data/events/index.ts::ALL_EVENTS`) : `army.ts` (mission-phare a 3
+  phases "Operation Kambara" - intervention contre une exploitation
+  miniere clandestine fictive), `police.ts` (enquete sur une
+  disparition, avec un choix supplementaire debloque par la
+  perspicacite via `requires`), `gendarmerie.ts`, `crime.ts` (dette
+  envers un rival, toujours abstrait), `entrepreneur.ts` (contrat
+  majeur), `politics.ts` (mobilisation citoyenne, choix charismatique
+  debloque), `presidency.ts` (arbitrage budgetaire, miroir de l'exemple
+  du cahier des charges). Chaque mission est recurrente (`cooldown`),
+  pas `once`, et remet ses flags a `false` a la resolution.
+- **Affichage** : `EventCard.tsx` detecte `event.mission` et affiche un
+  bandeau immersif (titre de mission, objectif, difficulte, apercu
+  recompenses/risques en phase "briefing") au-dessus de la carte
+  d'evenement normale — jamais une deuxieme UI parallele.
+
+### Refonte de l'interface (identite visuelle + tableau de bord)
+Le moteur ne change pas : cette section documente uniquement comment
+l'UI consomme les donnees deja calculees par `engine/` et `data/`.
+
+- **Identite visuelle** : palette sombre chaleureuse (`app/globals.css`)
+  — fond charbon profond, accents ocre/or — plutot que le bleu
+  generique initial. Pas d'asset 3D ni d'illustration photographique
+  (aucun pipeline d'assets disponible) : un avatar-initiales stylise
+  (`components/IdentityStrip.tsx`) tient lieu de portrait.
+- **Tableau de bord en onglets** (`components/GameScreen.tsx`) :
+  Apercu / Carriere / Personnalite / Finances / Relations / Politique
+  (visible seulement en filiere politique ou a la presidence) /
+  Historique — pour ne jamais surcharger un seul ecran. La carte
+  d'evenement (ou mission) reste toujours visible au-dessus des
+  onglets, avec le journal recent et le nouveau
+  `ConsequencesPanel.tsx`.
+- **`data/challenges.ts`** (nouveau, presentation pure) :
+  `computeCurrentChallenges` derive une liste de defis ⚠️/✓ a partir
+  des jauges de risque, de la hierarchie et du contexte du pays deja
+  calcules ailleurs — aucune nouvelle donnee stockee.
+- **`data/ambitions.ts`** etendu : `computeGoalProgressFactors`
+  (facteurs +/- de la jauge d'objectif) et `listLockedTransitions`
+  (trajectoires verrouillees avec la condition reelle du moteur, ex:
+  seuil d'influence de `political-entry` dans `career.ts` — jamais une
+  condition inventee).
+- **`data/finances.ts`** etendu : `computeFinancialHealth` (fragile /
+  stable / confortable / prospere / exceptionnelle).
+- **`data/effectsSummary.ts`** (nouveau) : traduit les effets VISIBLES
+  d'un choix en lignes lisibles ("+ Reputation") pour
+  `ConsequencesPanel.tsx`. N'inspecte jamais `hiddenEffects` ni
+  `delayedEffects` : certaines consequences doivent rester cachees ou
+  n'apparaitre que plus tard, exactement comme le veut le moteur.
+  `store/useGameStore.ts` expose `lastConsequences`, recalcule a chaque
+  choix.
+- **`components/CareerLadder.tsx`** (nouveau) : visualise les rangs
+  d'une filiere avec la position actuelle, a partir de `CAREER_TRACKS`
+  (aucune nouvelle donnee).
+- **Aucun doublon de systeme** : `CharacterSheet.tsx` a ete recentre sur
+  l'identite pure (nom/age/grade/ancien parcours) : les stats detaillees
+  vivent desormais uniquement dans les onglets Personnalite/Finances/
+  Reputation, jamais affichees deux fois. `AmbitionPanel.tsx` ne montre
+  plus l'objectif principal (deja dans l'onglet Apercu), seulement les
+  ambitions secondaires, les trajectoires verrouillees et le passe
+  professionnel.
+
 ### Contrainte d'architecture explicitement demandee
 Separer clairement : moteur de simulation / donnees / evenements /
 carrieres / personnages / relations / economie / politique / interface
@@ -501,14 +577,29 @@ data/       contenu declaratif. Ajouter du contenu ici NE TOUCHE JAMAIS engine/
                                subordonnes (arbitrage explicite), contenu
                                propre au colonel/dirigeant/elu, gestion
                                presidentielle multi-domaines avec compromis
+    missions/                  une mission = une chaine de GameEvent existants
+                               habillee de metadonnees `mission` (voir plus haut) :
+                               army.ts, police.ts, gendarmerie.ts, crime.ts,
+                               entrepreneur.ts, politics.ts, presidency.ts,
+                               + index.ts (MISSION_EVENTS)
     memory.ts                  evenements de rappel (systeme de memoire)
+
+  ambitions.ts (etendu)    + computeGoalProgressFactors, listLockedTransitions
+  finances.ts (etendu)     + computeFinancialHealth
+  challenges.ts             "defis actuels" derives des jauges existantes
+  effectsSummary.ts         traduit les effets visibles d'un choix en lignes
+                            lisibles pour l'ecran de consequences
 
 store/useGameStore.ts   PONT entre le moteur et React (Zustand). Aucune regle de jeu
                         ici, seulement : appeler le moteur, cloner l'etat, sauvegarder,
-                        detecter une fin de partie.
+                        detecter une fin de partie, exposer lastConsequences.
 
-components/ + app/      UI Next.js (App Router), theme sombre. Ne contient aucune
-                        regle de jeu, seulement de l'affichage + dispatch d'actions.
+components/ + app/      UI Next.js (App Router), theme sombre chaleureux.
+                        Ne contient aucune regle de jeu, seulement de
+                        l'affichage + dispatch d'actions. GameScreen.tsx est
+                        un tableau de bord en onglets (components/tabs/) qui
+                        consomme les memes donnees moteur, jamais un second
+                        etat.
 ```
 
 ### Principe cle a ne jamais casser
@@ -617,10 +708,30 @@ Fait :
   distinctes (confiance des superieurs, moral des subordonnes) creent
   des arbitrages reels a partir du grade d'officier : voir la section
   "Chaque progression cree de nouveaux defis" plus haut.
-- Build Next.js et typecheck TypeScript verifies fonctionnels.
+- Systeme de missions (chaines de GameEvent existants habillees de
+  metadonnees `mission`, un affichage immersif dedie dans
+  `EventCard.tsx`) pour les 7 filieres + presidence : voir la section
+  "Systeme de missions" plus haut.
+- Interface refaite en tableau de bord a onglets (Apercu/Carriere/
+  Personnalite/Finances/Relations/Politique/Historique), identite
+  visuelle sombre chaleureuse, ecran de consequences apres chaque
+  choix, visualisation de la progression de carriere : voir la section
+  "Refonte de l'interface" plus haut.
+- Build Next.js et typecheck TypeScript verifies fonctionnels. Smoke
+  test manuel effectue (chargement de la page, rendu du nouveau
+  tableau de bord) ; pas de test automatise en navigateur (Playwright
+  n'est pas installe comme dependance du projet dans cette session).
 
 Pas encore fait / limites connues :
-- Pas de tests automatises du moteur (aucun framework de test installe).
+- Pas de tests automatises du moteur ni de l'UI (aucun framework de
+  test installe, Playwright non disponible comme dependance).
+- Les missions actuelles sont volontairement peu nombreuses (une par
+  filiere, 2-3 phases chacune) pour valider l'architecture : le systeme
+  est concu pour en accueillir des dizaines sans toucher au moteur,
+  mais le contenu reste a etoffer.
+- Les portraits de personnage restent un avatar-initiales stylise : pas
+  d'illustration ni de portrait genere (aucun pipeline d'asset graphique
+  disponible dans cette session).
 - L'interconnexion entre filieres reste basee sur des flags/relations
   ponctuels (ex: `former-criminal-entrepreneur`, `minister-joined-opposition`)
   plutot que sur une generation generique de rencontres entre PNJ de

@@ -1,13 +1,16 @@
 :root {
-  --bg: #0d1117;
-  --bg-panel: #161b22;
-  --border: #2a2f38;
-  --text: #e6edf3;
-  --text-muted: #8b949e;
-  --accent: #4f9dff;
-  --accent-dark: #2d6cd1;
-  --positive: #3fb950;
-  --warning: #f0883e;
+  --bg: #0f0d0b;
+  --bg-panel: #1a1512;
+  --bg-panel-raised: #221b17;
+  --border: #3a2f26;
+  --text: #f2e9de;
+  --text-muted: #a89787;
+  --accent: #d98e3f;
+  --accent-dark: #a8631f;
+  --accent-gold: #e0b34a;
+  --positive: #5fa876;
+  --warning: #d1653f;
+  --critical: #c0392b;
 }
 
 * {
@@ -16,16 +19,28 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: radial-gradient(circle at top, #171310 0%, var(--bg) 60%);
   color: var(--text);
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  font-family: "Georgia", "Iowan Old Style", "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.55;
 }
 
 h1,
-h2 {
+h2,
+h3 {
   margin: 0 0 0.5rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--accent-gold);
+}
+
+h3 {
+  font-size: 1rem;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 .muted {
@@ -37,11 +52,12 @@ h2 {
 }
 
 .panel {
-  background: var(--bg-panel);
+  background: linear-gradient(160deg, var(--bg-panel) 0%, var(--bg-panel-raised) 100%);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 1.25rem;
   margin-bottom: 1rem;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
 }
 
 .new-game-screen {
@@ -124,7 +140,7 @@ h2 {
 
 .choice-button:hover {
   border-color: var(--accent);
-  background: #1c2330;
+  background: #241c16;
 }
 
 .choice-button.primary {
@@ -198,6 +214,7 @@ h2 {
   font-size: 1.3rem;
   font-weight: 600;
   margin: 0.2rem 0 0.8rem;
+  color: var(--accent-gold);
 }
 
 .history-list {
@@ -211,6 +228,10 @@ h2 {
 .history-list li {
   padding: 0.3rem 0;
   border-bottom: 1px solid var(--border);
+}
+
+.history-timeline li {
+  color: var(--text);
 }
 
 .relationship-list {
@@ -268,6 +289,51 @@ h2 {
   margin-top: 1rem;
 }
 
+.mission-card {
+  border-color: var(--accent-gold);
+  background: linear-gradient(160deg, #221a10 0%, var(--bg-panel-raised) 100%);
+}
+
+.mission-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.9rem 0;
+}
+
+.mission-preview-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+}
+
+.mission-preview-list li {
+  padding: 0.15rem 0;
+}
+
+.difficulty-badge {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.difficulty-faible {
+  color: var(--positive);
+  border-color: var(--positive);
+}
+
+.difficulty-modere {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+.difficulty-eleve {
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
 .ending-badge {
   display: inline-block;
   font-size: 0.75rem;
@@ -316,26 +382,195 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
   padding: 1.5rem 1rem 0;
 }
 
-.game-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
-  gap: 1rem;
-  max-width: 1200px;
+.game-screen {
+  max-width: 900px;
   margin: 0 auto;
-  padding: 0 1rem 2rem;
+  padding: 0 1rem 3rem;
 }
 
-.column-main {
+.identity-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  margin: 1rem 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.identity-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(150deg, var(--accent-gold), var(--accent-dark));
+  color: #1a1512;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.identity-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.game-main {
+  margin-bottom: 1.5rem;
+}
+
+.consequences-panel {
+  border-color: var(--accent-gold);
+}
+
+.consequences-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.consequences-list li {
+  padding: 0.2rem 0;
+}
+
+.tone-positive {
+  color: var(--positive);
+}
+
+.tone-warning {
+  color: var(--warning);
+}
+
+.challenge-list,
+.factors-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0;
+}
+
+.challenge-list li,
+.factors-list li {
+  padding: 0.25rem 0;
+}
+
+.factors-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.6rem;
+}
+
+.tab-button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.tab-button:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.tab-button.active {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  background: rgba(224, 179, 74, 0.1);
+}
+
+.tab-content {
   min-width: 0;
 }
 
-@media (max-width: 900px) {
-  .game-grid {
+.career-ladder {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.career-ladder-step {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+  color: var(--text-muted);
+}
+
+.ladder-marker {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.ladder-past .ladder-marker {
+  background: var(--positive);
+}
+
+.ladder-current {
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+.ladder-current .ladder-marker {
+  background: var(--accent-gold);
+  box-shadow: 0 0 0 3px rgba(224, 179, 74, 0.25);
+}
+
+.financial-health {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.financial-health-fragile {
+  color: var(--critical);
+}
+
+.financial-health-stable {
+  color: var(--text-muted);
+}
+
+.financial-health-confortable {
+  color: var(--positive);
+}
+
+.financial-health-prospere,
+.financial-health-exceptionnelle {
+  color: var(--accent-gold);
+}
+
+@media (max-width: 640px) {
+  .factors-grid {
     grid-template-columns: 1fr;
+  }
+
+  .tab-button {
+    flex: 1 1 auto;
+    text-align: center;
   }
 }

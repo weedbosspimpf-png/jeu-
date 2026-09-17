@@ -49,6 +49,26 @@ export function computeFinancialInfluence(state: GameState): number {
   return clamp(Math.round(netWorthScore + investmentScore + reputationScore), 0, 100);
 }
 
+export type FinancialHealth = "fragile" | "stable" | "confortable" | "prospere" | "exceptionnelle";
+
+export const FINANCIAL_HEALTH_LABELS: Record<FinancialHealth, string> = {
+  fragile: "Fragile",
+  stable: "Stable",
+  confortable: "Confortable",
+  prospere: "Prospere",
+  exceptionnelle: "Exceptionnelle",
+};
+
+/** Indicateur visuel rapide de la situation financiere globale (patrimoine net de dettes). */
+export function computeFinancialHealth(state: GameState): FinancialHealth {
+  const netWorth = computeNetWorth(state);
+  if (netWorth < 0 || state.finances.debt > state.character.money + state.finances.savings) return "fragile";
+  if (netWorth < 3000) return "stable";
+  if (netWorth < 20000) return "confortable";
+  if (netWorth < 100000) return "prospere";
+  return "exceptionnelle";
+}
+
 export function getDominantWealthSource(state: GameState): WealthSourceId | null {
   const entries = Object.entries(state.finances.wealthBySource) as [WealthSourceId, number][];
   if (entries.length === 0) return null;

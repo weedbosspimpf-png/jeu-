@@ -306,6 +306,25 @@ export interface EventChoice {
   requires?: (state: GameState) => boolean;
 }
 
+/**
+ * Metadonnees purement descriptives qui font d'un GameEvent une etape de
+ * "mission" : aucun nouveau moteur, aucun nouvel etat. Une mission est
+ * juste une chaine de GameEvent existants (meme mecanisme que les
+ * epreuves militaires ou les missions criminelles deja presentes),
+ * liee par des flags, mais habillee d'un affichage immersif dedie
+ * (voir EventCard.tsx) plutot qu'une carte d'evenement generique.
+ */
+export interface MissionMeta {
+  id: string;
+  title: string;
+  objective: string;
+  difficulty: "faible" | "modere" | "eleve";
+  phase: "briefing" | "action" | "resolution";
+  /** Recompenses/risques indicatifs affiches avant de commencer (phase "briefing" uniquement). */
+  rewardsPreview?: string[];
+  risksPreview?: string[];
+}
+
 export interface GameEvent {
   id: string;
   title: string;
@@ -316,6 +335,7 @@ export interface GameEvent {
   weight?: number;
   condition: (state: GameState) => boolean;
   choices: EventChoice[];
+  mission?: MissionMeta;
 }
 
 export interface CareerRank {
